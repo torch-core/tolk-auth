@@ -34,6 +34,10 @@ export type MainStorage = {
     rolesWithCapability: Dictionary<bigint, bigint>;
 };
 
+export const Roles = {
+    RESET: 0n,
+};
+
 export const Opcodes = {
     OP_INCREASE: 0x7e8764ef,
     OP_RESET: 0x3a752f06,
