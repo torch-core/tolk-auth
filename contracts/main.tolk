@@ -4,6 +4,7 @@ import "storage";
 import "role-authority";
 import "messages";
 import "get-methods";
+import "constants/error";
 
 // the main entrypoint: called when a contract receives an message from other contracts
 fun onInternalMessage(in: InMessage) {
@@ -40,7 +41,7 @@ fun onInternalMessage(in: InMessage) {
         }
         else => {
             // ignore empty messages, "wrong opcode" for others
-            assert (in.body.isEmpty()) throw 0xFFFF
+            assert (in.body.isEmpty()) throw ERR_INVALID_OPCODE
         }
     }
 }

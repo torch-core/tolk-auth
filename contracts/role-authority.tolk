@@ -90,5 +90,5 @@ fun Auth.isAuthorized(self, user: address, opcode: Opcode): bool {
 }
 
 fun Auth.requireAuth(self, user: address, opcode: Opcode) {
-    assert(self.isAuthorized(user, opcode), ERROR_NOT_AUTHORIZED);
+    assert(self.isAuthorized(user, opcode), ERR_NOT_AUTHORIZED);
 }
