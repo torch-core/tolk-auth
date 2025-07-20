@@ -4,7 +4,7 @@ import { Opcodes, Main, ErrorCodes } from '../wrappers/Main';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
 
-describe('Test', () => {
+describe('Role Authority Test', () => {
     let code: Cell;
 
     beforeAll(async () => {
@@ -15,7 +15,7 @@ describe('Test', () => {
     let owner: SandboxContract<TreasuryContract>;
     let maxey: SandboxContract<TreasuryContract>;
     let main: SandboxContract<Main>;
-    const RESET_ROLE = 1;
+    const RESET_ROLE = 0;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
