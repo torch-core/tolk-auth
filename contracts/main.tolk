@@ -1,12 +1,11 @@
 tolk 1.0
 
-import "storage";
-import "messages";
-import "get-methods";
 import "constants/error";
+import "messages";
+import "storage";
+import "get-methods";
 import "auth/check";
 import "auth/messages";
-
 
 // the main entrypoint: called when a contract receives an message from other contracts
 fun onInternalMessage(in: InMessage) {
