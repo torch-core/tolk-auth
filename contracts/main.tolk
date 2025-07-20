@@ -8,9 +8,7 @@ import "role-authority/auth";
 import "role-authority/access";
 import "role-authority/messages";
 
-// the main entrypoint: called when a contract receives an message from other contracts
 fun onInternalMessage(in: InMessage) {
-    // use `lazy` to defer loading fields until they are accessed
     val msg = lazy AllowedMessage.fromSlice(in.body);
     var storage = lazy Storage.load();
     var auth = lazy storage.auth.load();
@@ -50,7 +48,6 @@ fun onInternalMessage(in: InMessage) {
             storage.save();
         }
         else => {
-            // ignore empty messages, "wrong opcode" for others
             assert (in.body.isEmpty()) throw ERR_INVALID_OPCODE
         }
     }

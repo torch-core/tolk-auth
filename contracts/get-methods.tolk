@@ -1,8 +1,6 @@
 import "storage";
 import "role-authority/constants/type";
 
-// get methods are a means to conveniently read contract data using, for example, HTTP APIs
-// note that unlike in many other smart contract VMs, get methods cannot be called by other contracts
 get fun currentCounter(): int {
     val storage = lazy Storage.load();
     return storage.counter;

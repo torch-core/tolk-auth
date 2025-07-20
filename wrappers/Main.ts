@@ -34,6 +34,10 @@ export const Opcodes = {
     OP_TRANSFER_OWNERSHIP: 0x7bb334c7,
 };
 
+export const ErrorCodes = {
+    NOT_AUTHORIZED: 1000,
+};
+
 export class Main implements Contract {
     constructor(
         readonly address: Address,
