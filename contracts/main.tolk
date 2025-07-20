@@ -25,9 +25,9 @@ fun onInternalMessage(in: InMessage) {
             storage.counter = 0;
             storage.save();
         }
-        SetUserRole => {
-            auth.requireAuth(in.senderAddress, OP_SET_USER_ROLE);
-            storage.auth = auth.setUserRole(msg.user, msg.role, msg.enabled);
+        SetPublicCapability => {
+            auth.requireAuth(in.senderAddress, OP_SET_PUBLIC_CAPABILITY);
+            storage.auth = auth.setPublicCapability(msg.opcode, msg.enabled);
             storage.save();
         }
         SetRoleCapability => {
@@ -35,9 +35,9 @@ fun onInternalMessage(in: InMessage) {
             storage.auth = auth.setRoleCapability(msg.role, msg.opcode, msg.enabled);
             storage.save();
         }
-        SetPublicCapability => {
-            auth.requireAuth(in.senderAddress, OP_SET_PUBLIC_CAPABILITY);
-            storage.auth = auth.setPublicCapability(msg.opcode, msg.enabled);
+        SetUserRole => {
+            auth.requireAuth(in.senderAddress, OP_SET_USER_ROLE);
+            storage.auth = auth.setUserRole(msg.user, msg.role, msg.enabled);
             storage.save();
         }
         TransferOwnership => {
