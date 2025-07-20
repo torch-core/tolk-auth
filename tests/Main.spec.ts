@@ -1,4 +1,4 @@
-import { Blockchain, printTransactionFees, SandboxContract, TreasuryContract } from '@ton/sandbox';
+import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Cell, toNano } from '@ton/core';
 import { Opcodes, Main, ErrorCodes } from '../wrappers/Main';
 import '@ton/test-utils';
@@ -19,7 +19,7 @@ describe('Role Authority Test', () => {
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
-        owner = await blockchain.treasury('deployer');
+        owner = await blockchain.treasury('owner');
         maxey = await blockchain.treasury('maxey');
 
         main = blockchain.openContract(
