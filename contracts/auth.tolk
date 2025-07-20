@@ -9,6 +9,38 @@ struct Auth {
     getRolesWithCapability: dict
 }
 
+struct (0xdd28b73e) SetUserRole {
+    queryId: QueryID
+    user: address
+    role: uint8
+    enabled: bool
+}
+
+struct (0xc6012bd0) SetRoleCapability {
+    queryId: QueryID
+    role: uint8
+    opcode: uint32
+    enabled: bool
+}
+
+struct (0x714a73bb) SetPublicCapability {
+    queryId: QueryID
+    opcode: uint32
+    enabled: bool
+}
+
+type AuthMessages = SetUserRole | SetRoleCapability | SetPublicCapability;
+
+fun Auth.setPublicCapability(mutate self, opcode: Opcode, enabled: bool) {
+    self.isCapabilityPublic.uDictSet(OPCODE_SIZE, opcode, beginCell().storeBool(enabled).endCell().beginParse());
+    return self.toCell();
+}
+
+fun Auth.getPublicCapability(self, opcode: Opcode): bool {
+    var (publicCapability, found) = self.isCapabilityPublic.uDictGet(OPCODE_SIZE, opcode);
+    return found ? publicCapability!.loadBool() : false;
+}
+
 fun Auth.setRoleCapability(mutate self, role: RoleMask, opcode: Opcode, enabled: bool) {
     var (roleCapability, found) = self.isCapabilityPublic.uDictGet(OPCODE_SIZE, opcode);
     val currentRoleCapability = (found ? roleCapability!.loadUint(ROLE_SIZE) : 0) as RoleMask;

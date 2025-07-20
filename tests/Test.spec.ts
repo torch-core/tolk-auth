@@ -62,6 +62,13 @@ describe('Test', () => {
         expect(userRole).toBe(1n << INCREASE_ROLE);
     });
 
+    it('should set public capability', async () => {
+        const opcode = Opcodes.OP_INCREASE;
+        await test.sendSetPublicCapability(deployer.getSender(), opcode, true);
+        const publicCapability = await test.getPublicCapability(opcode);
+        expect(publicCapability).toBe(true);
+    });
+
     it('should increase counter', async () => {
         const increaseTimes = 3;
         for (let i = 0; i < increaseTimes; i++) {

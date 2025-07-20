@@ -30,6 +30,7 @@ export const Opcodes = {
     OP_RESET: 0x3a752f06,
     OP_SET_USER_ROLE: 0xdd28b73e,
     OP_SET_ROLE_CAPABILITY: 0xc6012bd0,
+    OP_SET_PUBLIC_CAPABILITY: 0x714a73bb,
 };
 
 export class Test implements Contract {
@@ -134,6 +135,35 @@ export class Test implements Contract {
                 .storeBit(enabled)
                 .endCell(),
         });
+    }
+
+    async sendSetPublicCapability(
+        provider: ContractProvider,
+        via: Sender,
+        opcode: number,
+        enabled: boolean,
+        queryID?: bigint,
+    ) {
+        await provider.internal(via, {
+            value: toNano('0.1'),
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(Opcodes.OP_SET_PUBLIC_CAPABILITY, OPCODE_SIZE)
+                .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
+                .storeUint(opcode, OPCODE_SIZE)
+                .storeBit(enabled)
+                .endCell(),
+        });
+    }
+
+    async getPublicCapability(provider: ContractProvider, opcode: number) {
+        const result = await provider.get('publicCapability', [
+            {
+                type: 'int',
+                value: BigInt(opcode),
+            },
+        ]);
+        return result.stack.readBigNumber() == -1n ? true : false;
     }
 
     async getCounter(provider: ContractProvider) {

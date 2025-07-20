@@ -15,23 +15,9 @@ struct (0x3a752f06) ResetCounter {
     queryId: QueryID
 }
 
-struct (0xdd28b73e) SetUserRole {
-    queryId: QueryID
-    user: address
-    role: uint8
-    enabled: bool
-}
-
-struct (0xc6012bd0) SetRoleCapability {
-    queryId: QueryID
-    role: uint8
-    opcode: uint32
-    enabled: bool
-}
-
 // using unions to represent available messages
 // this allows processing them with pattern matching
-type AllowedMessage = IncreaseCounter | ResetCounter | SetUserRole | SetRoleCapability | SetRoleCapability
+type AllowedMessage = IncreaseCounter | ResetCounter | AuthMessages
 
 // the main entrypoint: called when a contract receives an message from other contracts
 fun onInternalMessage(in: InMessage) {
@@ -61,6 +47,12 @@ fun onInternalMessage(in: InMessage) {
             var storage = lazy Storage.load();
             var auth = lazy storage.auth.load();
             storage.auth = auth.setRoleCapability(msg.role, msg.opcode, msg.enabled);
+            storage.save();
+        }
+        SetPublicCapability => {
+            var storage = lazy Storage.load();
+            var auth = lazy storage.auth.load();
+            storage.auth = auth.setPublicCapability(msg.opcode, msg.enabled);
             storage.save();
         }
         else => {
@@ -96,4 +88,10 @@ get fun roleCapability(opcode: Opcode): RoleMask {
     val storage = lazy Storage.load();
     val auth = lazy storage.auth.load();
     return auth.getRoleCapability(opcode);
+}
+
+get fun publicCapability(opcode: Opcode): bool {
+    val storage = lazy Storage.load();
+    val auth = lazy storage.auth.load();
+    return auth.getPublicCapability(opcode);
 }
