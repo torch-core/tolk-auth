@@ -1,6 +1,4 @@
 import "@stdlib/tvm-dicts";
-import "../constants/type";
-import "../constants/size";
 import "constants/size";
 import "constants/type";
 

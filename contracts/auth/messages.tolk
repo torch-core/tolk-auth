@@ -1,4 +1,4 @@
-import "../constants/type";
+import "constants/type";
 
 struct (0xdd28b73e) SetUserRole {
     queryId: QueryID

@@ -4,7 +4,7 @@ import "constants/error";
 import "messages";
 import "storage";
 import "get-methods";
-import "auth/check";
+import "auth/checks";
 import "auth/messages";
 
 // the main entrypoint: called when a contract receives an message from other contracts

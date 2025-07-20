@@ -1,5 +1,5 @@
 import "auth/messages";
-import "constants/type";
+import "auth/constants/type";
 
 // the struct uses a 32-bit opcode prefix for message identification
 struct (0x7e8764ef) IncreaseCounter {

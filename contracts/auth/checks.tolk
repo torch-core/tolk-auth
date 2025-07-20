@@ -1,7 +1,6 @@
-import "../constants/type";
 import "core";
-import "constants/error";
 import "constants/type";
+import "constants/error";
 
 fun Auth.doesUserHaveRole(self, user: address, role: RoleMask): bool {
     val userRoles = self.getUserRoles(user);

@@ -1,6 +1,4 @@
-import "messages";
 import "storage";
-import "constants/type";
 import "auth/constants/type";
 
 // get methods are a means to conveniently read contract data using, for example, HTTP APIs
