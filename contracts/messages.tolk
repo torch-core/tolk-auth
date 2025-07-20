@@ -1,0 +1,16 @@
+import "role-authority";
+import "constants/type";
+
+// the struct uses a 32-bit opcode prefix for message identification
+struct (0x7e8764ef) IncreaseCounter {
+    queryId: QueryID  // query id, typically included in messages
+    increaseBy: uint32
+}
+
+struct (0x3a752f06) ResetCounter {
+    queryId: QueryID
+}
+
+// using unions to represent available messages
+// this allows processing them with pattern matching
+type AllowedMessage = IncreaseCounter | ResetCounter | AuthMessages
