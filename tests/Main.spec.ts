@@ -15,7 +15,7 @@ describe('Test', () => {
     let owner: SandboxContract<TreasuryContract>;
     let maxey: SandboxContract<TreasuryContract>;
     let main: SandboxContract<Main>;
-    const RESET_ROLE = 1n;
+    const RESET_ROLE = 1;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
@@ -44,46 +44,7 @@ describe('Test', () => {
     });
 
     describe('Basic Role Authority tests', () => {
-        it('should set role capability', async () => {
-            // Set RESET_ROLE to have OP_RESET capability
-            const opcode = Opcodes.OP_RESET;
-            const result = await main.sendSetRoleCapability(owner.getSender(), RESET_ROLE, opcode, true);
-
-            // Expect owner sends OP_SET_ROLE_CAPABILITY to main and success
-            expect(result.transactions).toHaveTransaction({
-                from: owner.address,
-                to: main.address,
-                success: true,
-                op: Opcodes.OP_SET_ROLE_CAPABILITY,
-            });
-
-            // Get role capability
-            const roleCapability = await main.getHasCapability(RESET_ROLE, opcode);
-
-            // Expect role capability to be true
-            expect(roleCapability).toBe(true);
-        });
-
-        it('should set user role', async () => {
-            // Set maxey to have RESET_ROLE
-            const result = await main.sendSetUserRole(owner.getSender(), maxey.address, RESET_ROLE, true);
-
-            // Expect owner sends OP_SET_maxey_ROLE to main and success
-            expect(result.transactions).toHaveTransaction({
-                from: owner.address,
-                to: main.address,
-                success: true,
-                op: Opcodes.OP_SET_USER_ROLE,
-            });
-
-            // Get maxey role
-            const maxeyRole = await main.getHasRole(maxey.address, RESET_ROLE);
-
-            // Expect maxey role to be true
-            expect(maxeyRole).toBe(true);
-        });
-
-        it('should set public capability', async () => {
+        it('should set public capability and unset public capability', async () => {
             // Set OP_INCREASE as public
             const opcode = Opcodes.OP_INCREASE;
             const result = await main.sendSetPublicCapability(owner.getSender(), opcode, true);
@@ -101,8 +62,111 @@ describe('Test', () => {
 
             // Expect public capability to be true
             expect(publicCapability).toBe(true);
-        });
 
+            // Unset public capability
+            const result2 = await main.sendSetPublicCapability(owner.getSender(), opcode, false);
+
+            // Expect owner sends OP_SET_PUBLIC_CAPABILITY to main and success
+            expect(result2.transactions).toHaveTransaction({
+                from: owner.address,
+                to: main.address,
+                success: true,
+                op: Opcodes.OP_SET_PUBLIC_CAPABILITY,
+            });
+
+            // Get public capability
+            const publicCapability2 = await main.getHasPublicCapability(opcode);
+
+            // Expect public capability to be false
+            expect(publicCapability2).toBe(false);
+        });
+        it('should set role capability and unset role capability', async () => {
+            // Set RESET_ROLE to have OP_RESET capability
+            const opcode = Opcodes.OP_RESET;
+            const result = await main.sendSetRoleCapability(owner.getSender(), RESET_ROLE, opcode, true);
+
+            // Expect owner sends OP_SET_ROLE_CAPABILITY to main and success
+            expect(result.transactions).toHaveTransaction({
+                from: owner.address,
+                to: main.address,
+                success: true,
+                op: Opcodes.OP_SET_ROLE_CAPABILITY,
+            });
+
+            // Get role capability
+            const roleCapability = await main.getHasCapability(RESET_ROLE, opcode);
+
+            // Expect role capability to be true
+            expect(roleCapability).toBe(true);
+
+            // Check Role capability
+            const storage = await main.getStorage();
+            expect(storage.rolesWithCapability.get(opcode)).toBe(1 << RESET_ROLE);
+
+            // Unset role capability
+            const result2 = await main.sendSetRoleCapability(owner.getSender(), RESET_ROLE, opcode, false);
+
+            // Expect owner sends OP_SET_ROLE_CAPABILITY to main and success
+            expect(result2.transactions).toHaveTransaction({
+                from: owner.address,
+                to: main.address,
+                success: true,
+                op: Opcodes.OP_SET_ROLE_CAPABILITY,
+            });
+
+            // Get role capability
+            const roleCapability2 = await main.getHasCapability(RESET_ROLE, opcode);
+
+            // Expect role capability to be false
+            expect(roleCapability2).toBe(false);
+
+            // Check Role capability
+            const storage2 = await main.getStorage();
+            expect(storage2.rolesWithCapability.get(opcode)).toBe(0);
+        });
+        it('should set user role and unset user role', async () => {
+            // Set maxey to have RESET_ROLE
+            const result = await main.sendSetUserRole(owner.getSender(), maxey.address, RESET_ROLE, true);
+
+            // Expect owner sends OP_SET_maxey_ROLE to main and success
+            expect(result.transactions).toHaveTransaction({
+                from: owner.address,
+                to: main.address,
+                success: true,
+                op: Opcodes.OP_SET_USER_ROLE,
+            });
+
+            // Get maxey role
+            const maxeyRole = await main.getHasRole(maxey.address, RESET_ROLE);
+
+            // Expect maxey role to be true
+            expect(maxeyRole).toBe(true);
+
+            // Check User role
+            const storage = await main.getStorage();
+            expect(storage.userRoles.get(maxey.address)).toBe(1 << RESET_ROLE);
+
+            // Unset user role
+            const result2 = await main.sendSetUserRole(owner.getSender(), maxey.address, RESET_ROLE, false);
+
+            // Expect owner sends OP_SET_USER_ROLE to main and success
+            expect(result2.transactions).toHaveTransaction({
+                from: owner.address,
+                to: main.address,
+                success: true,
+                op: Opcodes.OP_SET_USER_ROLE,
+            });
+
+            // Get maxey role
+            const maxeyRole2 = await main.getHasRole(maxey.address, RESET_ROLE);
+
+            // Expect maxey role to be false
+            expect(maxeyRole2).toBe(false);
+
+            // Check User role
+            const storage2 = await main.getStorage();
+            expect(storage2.userRoles.get(maxey.address)).toBe(0);
+        });
         it('should transfer ownership', async () => {
             // Create new owner
             const newOwner = await blockchain.treasury('newOwner');
@@ -233,15 +297,9 @@ describe('Test', () => {
         it('should owner increase counter without role capability and user role', async () => {
             const increaseTimes = 3;
             for (let i = 0; i < increaseTimes; i++) {
-                console.log(`increase ${i + 1}/${increaseTimes}`);
-
                 const counterBefore = await main.getCounter();
 
-                console.log('counter before increasing', counterBefore);
-
                 const increaseBy = Math.floor(Math.random() * 100);
-
-                console.log('increasing by', increaseBy);
 
                 const increaseResult = await main.sendIncrease(owner.getSender(), {
                     increaseBy,
@@ -255,8 +313,6 @@ describe('Test', () => {
                 });
 
                 const counterAfter = await main.getCounter();
-
-                console.log('counter after increasing', counterAfter);
 
                 expect(counterAfter).toBe(counterBefore + increaseBy);
             }

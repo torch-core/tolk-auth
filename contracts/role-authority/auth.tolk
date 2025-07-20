@@ -4,9 +4,9 @@ import "constants/type";
 
 struct Auth {
     owner: address
-    userRoles: dict
     isCapabilityPublic: dict
     rolesWithCapability: dict
+    userRoles: dict
 }
 
 fun Auth.getPublicCapability(self, opcode: Opcode): bool {

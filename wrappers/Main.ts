@@ -5,11 +5,12 @@ import {
     Contract,
     contractAddress,
     ContractProvider,
+    Dictionary,
     Sender,
     SendMode,
     toNano,
 } from '@ton/core';
-import { OPCODE_SIZE, QUERY_ID_SIZE } from './constants/size';
+import { COUNTER_SIZE, ID_SIZE, OPCODE_SIZE, QUERY_ID_SIZE, ROLE_SIZE } from './constants/size';
 
 export type MainConfig = {
     id: number;
@@ -24,6 +25,14 @@ export function mainConfigToCell(config: MainConfig): Cell {
         .storeRef(beginCell().storeAddress(config.owner).storeDict(null).storeDict(null).storeDict(null).endCell())
         .endCell();
 }
+
+export type MainStorage = {
+    id: number;
+    counter: number;
+    owner: Address;
+    userRoles: Dictionary<Address, bigint>;
+    rolesWithCapability: Dictionary<bigint, bigint>;
+};
 
 export const Opcodes = {
     OP_INCREASE: 0x7e8764ef,
@@ -67,7 +76,7 @@ export class Main implements Contract {
         };
     }
 
-    static createSetRoleCapabilityArg(role: bigint, opcode: number, enabled: boolean, queryID?: bigint) {
+    static createSetRoleCapabilityArg(role: number, opcode: number, enabled: boolean, queryID?: bigint) {
         return {
             value: toNano('0.03'),
             sendMode: SendMode.PAY_GAS_SEPARATELY,
@@ -81,7 +90,7 @@ export class Main implements Contract {
         };
     }
 
-    static createSetUserRoleArg(user: Address, role: bigint, enabled: boolean, queryID?: bigint) {
+    static createSetUserRoleArg(user: Address, role: number, enabled: boolean, queryID?: bigint) {
         return {
             value: toNano('0.03'),
             sendMode: SendMode.PAY_GAS_SEPARATELY,
@@ -154,7 +163,7 @@ export class Main implements Contract {
     async sendSetRoleCapability(
         provider: ContractProvider,
         via: Sender,
-        role: bigint,
+        role: number,
         opcode: number,
         enabled: boolean,
         queryID?: bigint,
@@ -166,7 +175,7 @@ export class Main implements Contract {
         provider: ContractProvider,
         via: Sender,
         user: Address,
-        role: bigint,
+        role: number,
         enabled: boolean,
         queryID?: bigint,
     ) {
@@ -205,11 +214,11 @@ export class Main implements Contract {
         return result.stack.readBoolean();
     }
 
-    async getHasCapability(provider: ContractProvider, role: bigint, opcode: number) {
+    async getHasCapability(provider: ContractProvider, role: number, opcode: number) {
         const result = await provider.get('hasCapability', [
             {
                 type: 'int',
-                value: role,
+                value: BigInt(role),
             },
             {
                 type: 'int',
@@ -219,7 +228,7 @@ export class Main implements Contract {
         return result.stack.readBoolean();
     }
 
-    async getHasRole(provider: ContractProvider, user: Address, role: bigint) {
+    async getHasRole(provider: ContractProvider, user: Address, role: number) {
         const result = await provider.get('hasRole', [
             {
                 type: 'slice',
@@ -227,7 +236,7 @@ export class Main implements Contract {
             },
             {
                 type: 'int',
-                value: role,
+                value: BigInt(role),
             },
         ]);
         return result.stack.readBoolean();
@@ -236,5 +245,29 @@ export class Main implements Contract {
     async getOwner(provider: ContractProvider) {
         const result = await provider.get('owner', []);
         return result.stack.readAddress();
+    }
+
+    async getStorage(provider: ContractProvider) {
+        const { state } = await provider.getState();
+        if (state.type !== 'active' || !state.code || !state.data) {
+            throw new Error('tgUSDEngine is not active');
+        }
+        const storageBoc = Cell.fromBoc(state.data)[0];
+        if (!storageBoc) {
+            throw new Error('Main is not initialized');
+        }
+        const storageSlice = storageBoc.beginParse();
+        const id = storageSlice.loadUint(ID_SIZE);
+        const counter = storageSlice.loadUint(COUNTER_SIZE);
+        const authSlice = storageSlice.loadRef().beginParse();
+        const owner = authSlice.loadAddress();
+        const isCapabilityPublic = authSlice.loadDict(Dictionary.Keys.Uint(OPCODE_SIZE), Dictionary.Values.Bool());
+        const rolesWithCapability = authSlice.loadDict(
+            Dictionary.Keys.Uint(OPCODE_SIZE),
+            Dictionary.Values.Uint(ROLE_SIZE),
+        );
+        const userRoles = authSlice.loadDict(Dictionary.Keys.Address(), Dictionary.Values.Uint(ROLE_SIZE));
+
+        return { id, counter, owner, userRoles, rolesWithCapability, isCapabilityPublic };
     }
 }
