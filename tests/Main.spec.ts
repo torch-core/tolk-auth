@@ -74,8 +74,6 @@ describe('Test', () => {
         for (let i = 0; i < increaseTimes; i++) {
             console.log(`increase ${i + 1}/${increaseTimes}`);
 
-            const increaser = await blockchain.treasury('increaser' + i);
-
             const counterBefore = await main.getCounter();
 
             console.log('counter before increasing', counterBefore);
@@ -84,13 +82,13 @@ describe('Test', () => {
 
             console.log('increasing by', increaseBy);
 
-            const increaseResult = await main.sendIncrease(increaser.getSender(), {
+            const increaseResult = await main.sendIncrease(deployer.getSender(), {
                 increaseBy,
                 value: toNano('0.05'),
             });
 
             expect(increaseResult.transactions).toHaveTransaction({
-                from: increaser.address,
+                from: deployer.address,
                 to: main.address,
                 success: true,
             });
@@ -104,19 +102,17 @@ describe('Test', () => {
     });
 
     it('should reset counter', async () => {
-        const increaser = await blockchain.treasury('increaser');
-
         expect(await main.getCounter()).toBe(0);
 
         const increaseBy = 5;
-        await main.sendIncrease(increaser.getSender(), {
+        await main.sendIncrease(deployer.getSender(), {
             increaseBy,
             value: toNano('0.05'),
         });
 
         expect(await main.getCounter()).toBe(increaseBy);
 
-        await main.sendReset(increaser.getSender(), {
+        await main.sendReset(deployer.getSender(), {
             value: toNano('0.05'),
         });
 

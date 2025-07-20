@@ -14,14 +14,13 @@ fun onInternalMessage(in: InMessage) {
 
     match (msg) {
         IncreaseCounter => {
-            // auth.requireAuth(in.senderAddress, IncreaseCounter.getDeclaredPackPrefix());
-            // load contract storage lazily (efficient for large or partial reads/updates)
+            auth.requireAuth(in.senderAddress, OP_INCREASE);
             storage.counter += msg.increaseBy;
             storage.save();
         }
 
         ResetCounter => {
-            // auth.requireAuth(in.senderAddress, ResetCounter.getDeclaredPackPrefix());
+            auth.requireAuth(in.senderAddress, OP_RESET);
             storage.counter = 0;
             storage.save();
         }

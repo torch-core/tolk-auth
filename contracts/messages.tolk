@@ -11,6 +11,9 @@ struct (0x3a752f06) ResetCounter {
     queryId: QueryID
 }
 
+const OP_INCREASE = IncreaseCounter.getDeclaredPackPrefix();
+const OP_RESET = ResetCounter.getDeclaredPackPrefix();
+
 // using unions to represent available messages
 // this allows processing them with pattern matching
 type AllowedMessage = IncreaseCounter | ResetCounter | AuthMessages
