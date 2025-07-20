@@ -50,6 +50,47 @@ export class Main implements Contract {
         return new Main(contractAddress(workchain, init), init);
     }
 
+    static createSetPublicCapabilityArg(opcode: number, enabled: boolean, queryID?: bigint) {
+        return {
+            value: toNano('0.03'),
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(Opcodes.OP_SET_PUBLIC_CAPABILITY, OPCODE_SIZE)
+                .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
+                .storeUint(opcode, OPCODE_SIZE)
+                .storeBit(enabled)
+                .endCell(),
+        };
+    }
+
+    static createSetRoleCapabilityArg(role: bigint, opcode: number, enabled: boolean, queryID?: bigint) {
+        return {
+            value: toNano('0.03'),
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(Opcodes.OP_SET_ROLE_CAPABILITY, OPCODE_SIZE)
+                .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
+                .storeUint(role, 8)
+                .storeUint(opcode, OPCODE_SIZE)
+                .storeBit(enabled)
+                .endCell(),
+        };
+    }
+
+    static createSetUserRoleArg(user: Address, role: bigint, enabled: boolean, queryID?: bigint) {
+        return {
+            value: toNano('0.03'),
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(Opcodes.OP_SET_USER_ROLE, OPCODE_SIZE)
+                .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
+                .storeAddress(user)
+                .storeUint(role, 8)
+                .storeBit(enabled)
+                .endCell(),
+        };
+    }
+
     async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {
         await provider.internal(via, {
             value,
@@ -96,25 +137,14 @@ export class Main implements Contract {
         });
     }
 
-    async sendSetUserRole(
+    async sendSetPublicCapability(
         provider: ContractProvider,
         via: Sender,
-        user: Address,
-        role: bigint,
+        opcode: number,
         enabled: boolean,
         queryID?: bigint,
     ) {
-        await provider.internal(via, {
-            value: toNano('0.1'),
-            sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell()
-                .storeUint(Opcodes.OP_SET_USER_ROLE, OPCODE_SIZE)
-                .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
-                .storeAddress(user)
-                .storeUint(role, 8)
-                .storeBit(enabled)
-                .endCell(),
-        });
+        await provider.internal(via, Main.createSetPublicCapabilityArg(opcode, enabled, queryID));
     }
 
     async sendSetRoleCapability(
@@ -125,36 +155,18 @@ export class Main implements Contract {
         enabled: boolean,
         queryID?: bigint,
     ) {
-        await provider.internal(via, {
-            value: toNano('0.1'),
-            sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell()
-                .storeUint(Opcodes.OP_SET_ROLE_CAPABILITY, OPCODE_SIZE)
-                .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
-                .storeUint(role, 8)
-                .storeUint(opcode, OPCODE_SIZE)
-                .storeBit(enabled)
-                .endCell(),
-        });
+        await provider.internal(via, Main.createSetRoleCapabilityArg(role, opcode, enabled, queryID));
     }
 
-    async sendSetPublicCapability(
+    async sendSetUserRole(
         provider: ContractProvider,
         via: Sender,
-        opcode: number,
+        user: Address,
+        role: bigint,
         enabled: boolean,
         queryID?: bigint,
     ) {
-        await provider.internal(via, {
-            value: toNano('0.1'),
-            sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell()
-                .storeUint(Opcodes.OP_SET_PUBLIC_CAPABILITY, OPCODE_SIZE)
-                .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
-                .storeUint(opcode, OPCODE_SIZE)
-                .storeBit(enabled)
-                .endCell(),
-        });
+        await provider.internal(via, Main.createSetUserRoleArg(user, role, enabled, queryID));
     }
 
     async sendTransferOwnerShip(provider: ContractProvider, via: Sender, newOwner: Address, queryID?: bigint) {
