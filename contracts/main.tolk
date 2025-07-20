@@ -4,6 +4,7 @@ import "constants/error";
 import "messages";
 import "storage";
 import "get-methods";
+import "role-authority/auth";
 import "role-authority/access";
 import "role-authority/messages";
 
