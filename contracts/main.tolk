@@ -18,7 +18,6 @@ fun onInternalMessage(in: InMessage) {
             storage.counter += msg.increaseBy;
             storage.save();
         }
-
         ResetCounter => {
             auth.requireAuth(in.senderAddress, OP_RESET);
             storage.counter = 0;
@@ -44,8 +43,4 @@ fun onInternalMessage(in: InMessage) {
             assert (in.body.isEmpty()) throw 0xFFFF
         }
     }
-}
-
-// a handler for bounced messages (not used here, may be ommited)
-fun onBouncedMessage(in: InMessageBounced) {
 }
