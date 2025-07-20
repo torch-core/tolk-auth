@@ -11,6 +11,13 @@ get fun initialId(): int {
     return storage.id;
 }
 
+// Auth get methods
+get fun owner(): address {
+    val storage = lazy Storage.load();
+    val auth = lazy storage.auth.load();
+    return auth.owner;
+}
+
 get fun hasPublicCapability(opcode: Opcode): bool {
     val storage = lazy Storage.load();
     val auth = lazy storage.auth.load();
@@ -27,10 +34,4 @@ get fun hasRole(user: address, role: RoleMask): bool {
     val storage = lazy Storage.load();
     val auth = lazy storage.auth.load();
     return auth.hasRole(user, role);
-}
-
-get fun owner(): address {
-    val storage = lazy Storage.load();
-    val auth = lazy storage.auth.load();
-    return auth.owner;
 }
