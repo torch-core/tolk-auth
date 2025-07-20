@@ -1,0 +1,1 @@
+const ERR_NOT_AUTHORIZED = 1000;

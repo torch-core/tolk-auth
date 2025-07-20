@@ -1,7 +1,7 @@
-import "role-authority";
 import "messages";
 import "storage";
 import "constants/type";
+import "auth/constants/type";
 
 // get methods are a means to conveniently read contract data using, for example, HTTP APIs
 // note that unlike in many other smart contract VMs, get methods cannot be called by other contracts

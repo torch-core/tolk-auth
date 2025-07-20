@@ -1,10 +1,12 @@
 tolk 1.0
 
 import "storage";
-import "role-authority";
 import "messages";
 import "get-methods";
 import "constants/error";
+import "auth/check";
+import "auth/messages";
+
 
 // the main entrypoint: called when a contract receives an message from other contracts
 fun onInternalMessage(in: InMessage) {

@@ -1,4 +1,4 @@
-import "role-authority";
+import "auth/messages";
 import "constants/type";
 
 // the struct uses a 32-bit opcode prefix for message identification
