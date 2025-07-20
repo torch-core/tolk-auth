@@ -1,6 +1,7 @@
 import "@stdlib/tvm-dicts";
 import "constants/size";
 import "constants/type";
+import "constants/error";
 
 struct Auth {
     owner: address
@@ -28,6 +29,10 @@ struct (0x714a73bb) SetPublicCapability {
     opcode: uint32
     enabled: bool
 }
+
+const OP_SET_USER_ROLE = SetUserRole.getDeclaredPackPrefix();
+const OP_SET_ROLE_CAPABILITY = SetRoleCapability.getDeclaredPackPrefix();
+const OP_SET_PUBLIC_CAPABILITY = SetPublicCapability.getDeclaredPackPrefix();
 
 type AuthMessages = SetUserRole | SetRoleCapability | SetPublicCapability;
 
@@ -71,4 +76,20 @@ fun Auth.getUserRoles(self, user: address): RoleMask {
     val userSlice = user as slice;
     var (userRoleCell, found) = self.userRoles.sDictGet(ADDRESS_SIZE, userSlice);
     return (found ? userRoleCell!.loadUint(ROLE_SIZE) : 0) as RoleMask;
+}
+
+fun Auth.canCall(self, user: address, opcode: Opcode): bool {
+    val userRoles = self.getUserRoles(user);
+    val publicCapability = self.getPublicCapability(opcode);
+    val roleCapability = self.getRoleCapability(opcode);
+
+    return (userRoles & roleCapability) != 0 || publicCapability;
+}
+
+fun Auth.isAuthorized(self, user: address, opcode: Opcode): bool {
+    return self.canCall(user, opcode) || user == self.owner;
+}
+
+fun Auth.requireAuth(self, user: address, opcode: Opcode) {
+    assert (self.isAuthorized(user, opcode)) throw ERROR_NOT_AUTHORIZED;
 }

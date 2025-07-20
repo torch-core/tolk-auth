@@ -40,18 +40,21 @@ fun onInternalMessage(in: InMessage) {
         SetUserRole => {
             var storage = lazy Storage.load();
             var auth = lazy storage.auth.load();
+            auth.requireAuth(in.senderAddress, OP_SET_USER_ROLE);
             storage.auth = auth.setUserRole(msg.user, msg.role, msg.enabled);
             storage.save();
         }
         SetRoleCapability => {
             var storage = lazy Storage.load();
             var auth = lazy storage.auth.load();
+            auth.requireAuth(in.senderAddress, OP_SET_ROLE_CAPABILITY);
             storage.auth = auth.setRoleCapability(msg.role, msg.opcode, msg.enabled);
             storage.save();
         }
         SetPublicCapability => {
             var storage = lazy Storage.load();
             var auth = lazy storage.auth.load();
+            auth.requireAuth(in.senderAddress, OP_SET_PUBLIC_CAPABILITY);
             storage.auth = auth.setPublicCapability(msg.opcode, msg.enabled);
             storage.save();
         }
