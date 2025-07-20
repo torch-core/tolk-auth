@@ -336,4 +336,200 @@ describe('Role Authority Test', () => {
             expect(await main.getCounter()).toBe(0);
         });
     });
+
+    describe('Complex bit mask verification tests', () => {
+        // Helper functions for bit calculation verification
+        const calculateRoleMask = (roles: number[]): number => {
+            return roles.reduce((mask, role) => mask | (1 << role), 0);
+        };
+
+        it('should correctly manage multiple roles for OP_RESET capability', async () => {
+            const opcode = Opcodes.OP_RESET;
+            const testRoles = [0, 1, 2, 4, 7]; // Test various roles including edge cases
+            let expectedMask = 0;
+
+            // Add roles one by one and verify bit mask
+            for (const role of testRoles) {
+                await main.sendSetRoleCapability(owner.getSender(), role, opcode, true);
+                expectedMask |= 1 << role;
+
+                const storage = await main.getStorage();
+                const actualMask = storage.rolesWithCapability.get(opcode) || 0;
+
+                expect(actualMask).toBe(expectedMask);
+                expect(await main.getHasCapability(role, opcode)).toBe(true);
+            }
+
+            // Verify all roles are set correctly
+            const finalExpectedMask = calculateRoleMask(testRoles);
+            expect((await main.getStorage()).rolesWithCapability.get(opcode)).toBe(finalExpectedMask);
+
+            // Remove roles one by one and verify bit mask
+            for (const role of testRoles) {
+                await main.sendSetRoleCapability(owner.getSender(), role, opcode, false);
+                expectedMask &= ~(1 << role);
+
+                const storage = await main.getStorage();
+                const actualMask = storage.rolesWithCapability.get(opcode) || 0;
+
+                expect(actualMask).toBe(expectedMask);
+                expect(await main.getHasCapability(role, opcode)).toBe(false);
+            }
+
+            // Final mask should be 0
+            expect((await main.getStorage()).rolesWithCapability.get(opcode)).toBe(0);
+        });
+
+        it('should correctly manage multiple opcodes for single user', async () => {
+            const opcodes = [
+                Opcodes.OP_INCREASE,
+                Opcodes.OP_RESET,
+                Opcodes.OP_SET_PUBLIC_CAPABILITY,
+                Opcodes.OP_SET_ROLE_CAPABILITY,
+                Opcodes.OP_SET_USER_ROLE,
+            ];
+            const testUser = maxey.address;
+            const roles = opcodes.map((_, index) => index + 1); // Roles for different opcodes
+            let expectedUserMask = 0;
+
+            // Set capabilities for different opcodes
+            for (let i = 0; i < opcodes.length; i++) {
+                const role = roles[i];
+                const opcode = opcodes[i];
+
+                // Set role capability for opcode
+                await main.sendSetRoleCapability(owner.getSender(), role, opcode, true);
+
+                // Give user the role
+                await main.sendSetUserRole(owner.getSender(), testUser, role, true);
+                expectedUserMask |= 1 << role;
+
+                const storage = await main.getStorage();
+                const actualUserMask = storage.userRoles.get(testUser) || 0;
+
+                expect(actualUserMask).toBe(expectedUserMask);
+                expect(await main.getHasRole(testUser, role)).toBe(true);
+            }
+
+            // Add multiple additional roles to same user
+            const additionalRoles = [6, 7, 0]; // Test more roles
+            for (const additionalRole of additionalRoles) {
+                await main.sendSetUserRole(owner.getSender(), testUser, additionalRole, true);
+                expectedUserMask |= 1 << additionalRole;
+
+                const storage = await main.getStorage();
+                expect(storage.userRoles.get(testUser)).toBe(expectedUserMask);
+                expect(await main.getHasRole(testUser, additionalRole)).toBe(true);
+            }
+
+            // Remove roles selectively
+            await main.sendSetUserRole(owner.getSender(), testUser, roles[1], false);
+            expectedUserMask &= ~(1 << roles[1]);
+
+            const storageAfterRemoval = await main.getStorage();
+            expect(storageAfterRemoval.userRoles.get(testUser)).toBe(expectedUserMask);
+            expect(await main.getHasRole(testUser, roles[1])).toBe(false);
+        });
+
+        it('should handle all 8 roles edge case testing', async () => {
+            const opcode = Opcodes.OP_INCREASE;
+            const allRoles = [0, 1, 2, 3, 4, 5, 6, 7];
+
+            // Add all 8 roles
+            for (const role of allRoles) {
+                await main.sendSetRoleCapability(owner.getSender(), role, opcode, true);
+            }
+
+            // Should have all bits set (0xFF = 255)
+            const storage = await main.getStorage();
+            expect(Number(storage.rolesWithCapability.get(opcode))).toBe(255);
+
+            // Verify each role individually
+            for (const role of allRoles) {
+                expect(await main.getHasCapability(role, opcode)).toBe(true);
+            }
+
+            // Remove even numbered roles (0, 2, 4, 6)
+            const evenRoles = [0, 2, 4, 6];
+            for (const role of evenRoles) {
+                await main.sendSetRoleCapability(owner.getSender(), role, opcode, false);
+            }
+
+            // Should have odd roles remaining (1, 3, 5, 7) = 170 (0xAA)
+            const storageAfterEvenRemoval = await main.getStorage();
+            expect(Number(storageAfterEvenRemoval.rolesWithCapability.get(opcode))).toBe(170);
+
+            // Verify remaining roles
+            const oddRoles = [1, 3, 5, 7];
+            for (const role of oddRoles) {
+                expect(await main.getHasCapability(role, opcode)).toBe(true);
+            }
+            for (const role of evenRoles) {
+                expect(await main.getHasCapability(role, opcode)).toBe(false);
+            }
+        });
+
+        it('should handle complex mixed add/remove operations', async () => {
+            const opcodes = [Opcodes.OP_INCREASE, Opcodes.OP_RESET];
+            const user1 = maxey.address;
+            const user2 = await blockchain.treasury('user2');
+
+            // Complex sequence of operations
+            const operations = [
+                { type: 'roleCapability' as const, role: 1, opcode: opcodes[0], enabled: true },
+                { type: 'roleCapability' as const, role: 2, opcode: opcodes[0], enabled: true },
+                { type: 'userRole' as const, user: user1, role: 1, enabled: true },
+                { type: 'roleCapability' as const, role: 3, opcode: opcodes[1], enabled: true },
+                { type: 'userRole' as const, user: user1, role: 2, enabled: true },
+                { type: 'userRole' as const, user: user2.address, role: 3, enabled: true },
+                { type: 'roleCapability' as const, role: 1, opcode: opcodes[0], enabled: false }, // Remove role 1 from OP_INCREASE
+                { type: 'userRole' as const, user: user1, role: 1, enabled: false }, // Remove role 1 from user1
+                { type: 'roleCapability' as const, role: 4, opcode: opcodes[1], enabled: true },
+                { type: 'userRole' as const, user: user2.address, role: 4, enabled: true },
+            ];
+
+            let expectedOpcodeRoles = { [opcodes[0]]: 0, [opcodes[1]]: 0 };
+            let expectedUserRoles = { [user1.toString()]: 0, [user2.address.toString()]: 0 };
+
+            for (const op of operations) {
+                if (op.type === 'roleCapability') {
+                    await main.sendSetRoleCapability(owner.getSender(), op.role, op.opcode, op.enabled);
+                    if (op.enabled) {
+                        expectedOpcodeRoles[op.opcode] |= 1 << op.role;
+                    } else {
+                        expectedOpcodeRoles[op.opcode] &= ~(1 << op.role);
+                    }
+                } else if (op.type === 'userRole') {
+                    await main.sendSetUserRole(owner.getSender(), op.user, op.role, op.enabled);
+                    const userKey = op.user.toString();
+                    if (op.enabled) {
+                        expectedUserRoles[userKey] |= 1 << op.role;
+                    } else {
+                        expectedUserRoles[userKey] &= ~(1 << op.role);
+                    }
+                }
+
+                // Verify state after each operation
+                const storage = await main.getStorage();
+
+                for (const opcode of opcodes) {
+                    const actualMask = storage.rolesWithCapability.get(opcode) || 0n;
+                    expect(Number(actualMask)).toBe(expectedOpcodeRoles[opcode]);
+                }
+
+                const actualUser1Mask = storage.userRoles.get(user1) || 0n;
+                const actualUser2Mask = storage.userRoles.get(user2.address) || 0n;
+                expect(Number(actualUser1Mask)).toBe(expectedUserRoles[user1.toString()]);
+                expect(Number(actualUser2Mask)).toBe(expectedUserRoles[user2.address.toString()]);
+            }
+
+            // Final verification: user1 should have role 2, user2 should have roles 3 and 4
+            expect(Number((await main.getStorage()).userRoles.get(user1))).toBe(4); // 1 << 2
+            expect(Number((await main.getStorage()).userRoles.get(user2.address))).toBe(24); // (1 << 3) | (1 << 4)
+
+            // OP_INCREASE should have role 2, OP_RESET should have roles 3 and 4
+            expect(Number((await main.getStorage()).rolesWithCapability.get(opcodes[0]))).toBe(4); // 1 << 2
+            expect(Number((await main.getStorage()).rolesWithCapability.get(opcodes[1]))).toBe(24); // (1 << 3) | (1 << 4)
+        });
+    });
 });
