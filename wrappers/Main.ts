@@ -169,16 +169,6 @@ export class Main implements Contract {
         });
     }
 
-    async getDoesPublicCapabilityExist(provider: ContractProvider, opcode: number) {
-        const result = await provider.get('doesPublicCapabilityExist', [
-            {
-                type: 'int',
-                value: BigInt(opcode),
-            },
-        ]);
-        return result.stack.readBoolean();
-    }
-
     async getCounter(provider: ContractProvider) {
         const result = await provider.get('currentCounter', []);
         return result.stack.readNumber();
@@ -189,22 +179,18 @@ export class Main implements Contract {
         return result.stack.readNumber();
     }
 
-    async getDoesUserHaveRole(provider: ContractProvider, user: Address, role: bigint) {
-        const result = await provider.get('doesUserHaveRole', [
-            {
-                type: 'slice',
-                cell: beginCell().storeAddress(user).endCell(),
-            },
+    async getHasPublicCapability(provider: ContractProvider, opcode: number) {
+        const result = await provider.get('hasPublicCapability', [
             {
                 type: 'int',
-                value: role,
+                value: BigInt(opcode),
             },
         ]);
         return result.stack.readBoolean();
     }
 
-    async getDoesRoleHaveCapability(provider: ContractProvider, role: bigint, opcode: number) {
-        const result = await provider.get('doesRoleHaveCapability', [
+    async getHasCapability(provider: ContractProvider, role: bigint, opcode: number) {
+        const result = await provider.get('hasCapability', [
             {
                 type: 'int',
                 value: role,
@@ -212,6 +198,20 @@ export class Main implements Contract {
             {
                 type: 'int',
                 value: BigInt(opcode),
+            },
+        ]);
+        return result.stack.readBoolean();
+    }
+
+    async getHasRole(provider: ContractProvider, user: Address, role: bigint) {
+        const result = await provider.get('hasRole', [
+            {
+                type: 'slice',
+                cell: beginCell().storeAddress(user).endCell(),
+            },
+            {
+                type: 'int',
+                value: role,
             },
         ]);
         return result.stack.readBoolean();

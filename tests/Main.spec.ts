@@ -50,7 +50,7 @@ describe('Test', () => {
         const opcode = Opcodes.OP_INCREASE;
         await main.sendSetRoleCapability(deployer.getSender(), INCREASE_ROLE, opcode, true);
 
-        const roleCapability = await main.getDoesRoleHaveCapability(INCREASE_ROLE, opcode);
+        const roleCapability = await main.getHasCapability(INCREASE_ROLE, opcode);
         expect(roleCapability).toBe(true);
     });
 
@@ -58,14 +58,14 @@ describe('Test', () => {
         await main.sendSetUserRole(deployer.getSender(), deployer.address, INCREASE_ROLE, true);
 
         // Get user role
-        const userRole = await main.getDoesUserHaveRole(deployer.address, INCREASE_ROLE);
+        const userRole = await main.getHasRole(deployer.address, INCREASE_ROLE);
         expect(userRole).toBe(true);
     });
 
     it('should set public capability', async () => {
         const opcode = Opcodes.OP_INCREASE;
         await main.sendSetPublicCapability(deployer.getSender(), opcode, true);
-        const publicCapability = await main.getDoesPublicCapabilityExist(opcode);
+        const publicCapability = await main.getHasPublicCapability(opcode);
         expect(publicCapability).toBe(true);
     });
 
