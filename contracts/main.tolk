@@ -4,8 +4,8 @@ import "constants/error";
 import "messages";
 import "storage";
 import "get-methods";
-import "auth/checks";
-import "auth/messages";
+import "role-authority/access";
+import "role-authority/messages";
 
 // the main entrypoint: called when a contract receives an message from other contracts
 fun onInternalMessage(in: InMessage) {
@@ -40,7 +40,7 @@ fun onInternalMessage(in: InMessage) {
             storage.auth = auth.setPublicCapability(msg.opcode, msg.enabled);
             storage.save();
         }
-        TransferOwnerShip => {
+        TransferOwnership => {
             auth.requireAuth(in.senderAddress, OP_TRANSFER_OWNERSHIP);
             auth.owner = msg.newOwner;
             storage.auth = auth.toCell();

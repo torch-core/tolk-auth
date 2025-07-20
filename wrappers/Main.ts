@@ -31,7 +31,7 @@ export const Opcodes = {
     OP_SET_USER_ROLE: 0xdd28b73e,
     OP_SET_ROLE_CAPABILITY: 0xc6012bd0,
     OP_SET_PUBLIC_CAPABILITY: 0x714a73bb,
-    OP_TRANSFER_OWNERSHIP: 0xdb819bf9,
+    OP_TRANSFER_OWNERSHIP: 0x7bb334c7,
 };
 
 export class Main implements Contract {

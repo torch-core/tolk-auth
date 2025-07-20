@@ -20,7 +20,7 @@ struct (0x714a73bb) SetPublicCapability {
     enabled: bool
 }
 
-struct (0xdb819bf9) TransferOwnerShip {
+struct (0x7bb334c7) TransferOwnership {
     queryId: QueryID
     newOwner: address
 }
@@ -28,6 +28,6 @@ struct (0xdb819bf9) TransferOwnerShip {
 const OP_SET_USER_ROLE = SetUserRole.getDeclaredPackPrefix();
 const OP_SET_ROLE_CAPABILITY = SetRoleCapability.getDeclaredPackPrefix();
 const OP_SET_PUBLIC_CAPABILITY = SetPublicCapability.getDeclaredPackPrefix();
-const OP_TRANSFER_OWNERSHIP = TransferOwnerShip.getDeclaredPackPrefix();
+const OP_TRANSFER_OWNERSHIP = TransferOwnership.getDeclaredPackPrefix();
 
-type AuthMessages = SetUserRole | SetRoleCapability | SetPublicCapability | TransferOwnerShip;
+type AuthMessages = SetUserRole | SetRoleCapability | SetPublicCapability | TransferOwnership;

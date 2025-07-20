@@ -1,1 +1,1 @@
-const SetRoleCapability = "TransferOwnerShip"c;
+const SetRoleCapability = "TransferOwnership"c;

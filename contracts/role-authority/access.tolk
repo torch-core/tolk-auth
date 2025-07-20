@@ -1,4 +1,4 @@
-import "core";
+import "auth";
 import "constants/type";
 import "constants/error";
 

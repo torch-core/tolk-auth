@@ -1,4 +1,4 @@
-import "auth/core";
+import "role-authority/auth";
 
 // this struct defines storage layout of the contract
 struct Storage {
