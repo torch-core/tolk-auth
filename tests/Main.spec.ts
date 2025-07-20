@@ -1,4 +1,4 @@
-import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
+import { Blockchain, printTransactionFees, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Cell, toNano } from '@ton/core';
 import { Opcodes, Main, ErrorCodes } from '../wrappers/Main';
 import '@ton/test-utils';
@@ -433,7 +433,7 @@ describe('Role Authority Test', () => {
 
         it('should handle all 256 roles edge case testing', async () => {
             const opcode = Opcodes.OP_INCREASE;
-            
+
             // Add all 256 roles (0-255)
             for (let role = 0n; role < 256n; role++) {
                 await main.sendSetRoleCapability(owner.getSender(), role, opcode, true);
@@ -460,7 +460,7 @@ describe('Role Authority Test', () => {
             // Calculate expected value: sum of 2^i where i is odd from 1 to 255
             let expectedOddMask = 0n;
             for (let i = 1n; i < 256n; i += 2n) {
-                expectedOddMask |= (1n << i);
+                expectedOddMask |= 1n << i;
             }
             expect(storageAfterEvenRemoval.rolesWithCapability.get(opcode)).toBe(expectedOddMask);
 
@@ -469,36 +469,13 @@ describe('Role Authority Test', () => {
             for (const role of sampleOddRoles) {
                 expect(await main.getHasCapability(role, opcode)).toBe(true);
             }
-            
+
             // Verify removed even roles
             const sampleEvenRoles = [0n, 2n, 4n, 126n, 128n, 254n];
             for (const role of sampleEvenRoles) {
                 expect(await main.getHasCapability(role, opcode)).toBe(false);
             }
         });
-
-        // it('should reject invalid role 256 (out of bounds)', async () => {
-        //     const opcode = Opcodes.OP_INCREASE;
-        //     const invalidRole = 253n; // Should be out of bounds for 256-bit mask (valid range: 0-255)
-
-        //     // Attempt to set role capability for invalid role 256
-        //     const result = await main.sendSetRoleCapability(owner.getSender(), invalidRole, opcode, true);
-            
-        //     expect(result.transactions).toHaveTransaction({
-        //         from: owner.address,
-        //         to: main.address,
-        //         success: false,
-        //     });
-
-        //     // Attempt to assign invalid role 256 to user
-        //     const userRoleResult = await main.sendSetUserRole(owner.getSender(), maxey.address, invalidRole, true);
-            
-        //     expect(userRoleResult.transactions).toHaveTransaction({
-        //         from: owner.address,
-        //         to: main.address,
-        //         success: false,
-        //     });
-        // });
 
         it('should handle complex mixed add/remove operations', async () => {
             const opcodes = [Opcodes.OP_INCREASE, Opcodes.OP_RESET];
@@ -561,6 +538,21 @@ describe('Role Authority Test', () => {
             // OP_INCREASE should have role 2, OP_RESET should have roles 3 and 4
             expect((await main.getStorage()).rolesWithCapability.get(opcodes[0])).toBe(4n); // 1 << 2
             expect((await main.getStorage()).rolesWithCapability.get(opcodes[1])).toBe(24n); // (1 << 3) | (1 << 4)
+        });
+
+        it('should reject invalid role 256 (out of bounds)', async () => {
+            const opcode = Opcodes.OP_INCREASE;
+            const invalidRole = 256n; // Should be out of bounds for 256-bit mask (valid range: 0-255)
+
+            // Attempt to set role capability for invalid role 256
+            await expect(async () => {
+                await main.sendSetRoleCapability(owner.getSender(), invalidRole, opcode, true);
+            }).rejects.toThrow('bitLength is too small for a value 256');
+
+            // Attempt to assign invalid role 256 to user
+            await expect(async () => {
+                await main.sendSetUserRole(owner.getSender(), maxey.address, invalidRole, true);
+            }).rejects.toThrow('bitLength is too small for a value 256');
         });
     });
 });
