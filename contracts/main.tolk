@@ -41,6 +41,8 @@ fun onInternalMessage(in: InMessage) {
             storage.save();
         }
         TransferOwnership => {
+            // NOTE: This is a basic ownership transfer implementation. 
+            // A timelock mechanism for admin changes can also be implemented here.
             auth.requireAuth(in.senderAddress, OP_TRANSFER_OWNERSHIP);
             auth.owner = msg.newOwner;
             storage.auth = auth.toCell();
