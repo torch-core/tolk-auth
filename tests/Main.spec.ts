@@ -477,67 +477,64 @@ describe('Role Authority Test', () => {
             }
         });
 
-        it('should handle complex mixed add/remove operations', async () => {
+        it('should handle random fuzzing operations', async () => {
             const opcodes = [Opcodes.OP_INCREASE, Opcodes.OP_RESET];
-            const user1 = maxey.address;
-            const user2 = await blockchain.treasury('user2');
-
-            // Complex sequence of operations
-            const operations = [
-                { type: 'roleCapability' as const, role: 1n, opcode: opcodes[0], enabled: true },
-                { type: 'roleCapability' as const, role: 2n, opcode: opcodes[0], enabled: true },
-                { type: 'userRole' as const, user: user1, role: 1n, enabled: true },
-                { type: 'roleCapability' as const, role: 3n, opcode: opcodes[1], enabled: true },
-                { type: 'userRole' as const, user: user1, role: 2n, enabled: true },
-                { type: 'userRole' as const, user: user2.address, role: 3n, enabled: true },
-                { type: 'roleCapability' as const, role: 1n, opcode: opcodes[0], enabled: false }, // Remove role 1 from OP_INCREASE
-                { type: 'userRole' as const, user: user1, role: 1n, enabled: false }, // Remove role 1 from user1
-                { type: 'roleCapability' as const, role: 4n, opcode: opcodes[1], enabled: true },
-                { type: 'userRole' as const, user: user2.address, role: 4n, enabled: true },
-            ];
-
+            const users = [maxey.address, (await blockchain.treasury('user2')).address, (await blockchain.treasury('user3')).address];
+            const numOperations = 50; // Number of random operations to perform
+            
+            // Track expected state
             let expectedOpcodeRoles = { [opcodes[0]]: 0n, [opcodes[1]]: 0n };
-            let expectedUserRoles = { [user1.toString()]: 0n, [user2.address.toString()]: 0n };
-
-            for (const op of operations) {
-                if (op.type === 'roleCapability') {
-                    await main.sendSetRoleCapability(owner.getSender(), op.role, op.opcode, op.enabled);
-                    if (op.enabled) {
-                        expectedOpcodeRoles[op.opcode] |= 1n << op.role;
-                    } else {
-                        expectedOpcodeRoles[op.opcode] &= ~(1n << op.role);
-                    }
-                } else if (op.type === 'userRole') {
-                    await main.sendSetUserRole(owner.getSender(), op.user, op.role, op.enabled);
-                    const userKey = op.user.toString();
-                    if (op.enabled) {
-                        expectedUserRoles[userKey] |= 1n << op.role;
-                    } else {
-                        expectedUserRoles[userKey] &= ~(1n << op.role);
-                    }
-                }
-
-                // Verify state after each operation
-                const storage = await main.getStorage();
-
-                for (const opcode of opcodes) {
-                    const actualMask = storage.rolesWithCapability.get(opcode) || 0n;
-                    expect(actualMask).toBe(expectedOpcodeRoles[opcode]);
-                }
-
-                const actualUser1Mask = storage.userRoles.get(user1) || 0n;
-                const actualUser2Mask = storage.userRoles.get(user2.address) || 0n;
-                expect(actualUser1Mask).toBe(expectedUserRoles[user1.toString()]);
-                expect(actualUser2Mask).toBe(expectedUserRoles[user2.address.toString()]);
+            let expectedUserRoles: { [key: string]: bigint } = {};
+            
+            // Initialize expected user roles
+            for (const user of users) {
+                expectedUserRoles[user.toString()] = 0n;
             }
 
-            // Final verification: user1 should have role 2, user2 should have roles 3 and 4
-            expect((await main.getStorage()).userRoles.get(user1)).toBe(4n); // 1 << 2
-            expect((await main.getStorage()).userRoles.get(user2.address)).toBe(24n); // (1 << 3) | (1 << 4)
+            // Generate and execute random operations
+            for (let i = 0; i < numOperations; i++) {
+                const operationType = Math.random() < 0.5 ? 'roleCapability' : 'userRole';
+                const role = BigInt(Math.floor(Math.random() * 8)); // Random role 0-7
+                const opcode = opcodes[Math.floor(Math.random() * opcodes.length)];
+                const user = users[Math.floor(Math.random() * users.length)];
+                const enabled = Math.random() < 0.5;
 
-            // OP_INCREASE should have role 2, OP_RESET should have roles 3 and 4
-            expect((await main.getStorage()).rolesWithCapability.get(opcodes[0])).toBe(4n); // 1 << 2
-            expect((await main.getStorage()).rolesWithCapability.get(opcodes[1])).toBe(24n); // (1 << 3) | (1 << 4)
+                if (operationType === 'roleCapability') {
+                    await main.sendSetRoleCapability(owner.getSender(), role, opcode, enabled);
+                    
+                    if (enabled) {
+                        expectedOpcodeRoles[opcode] |= 1n << role;
+                    } else {
+                        expectedOpcodeRoles[opcode] &= ~(1n << role);
+                    }
+                } else {
+                    await main.sendSetUserRole(owner.getSender(), user, role, enabled);
+                    
+                    const userKey = user.toString();
+                    if (enabled) {
+                        expectedUserRoles[userKey] |= 1n << role;
+                    } else {
+                        expectedUserRoles[userKey] &= ~(1n << role);
+                    }
+                }
+
+                // Randomly verify state (not after every operation to speed up test)
+                if (i % 10 === 0 || i === numOperations - 1) {
+                    const storage = await main.getStorage();
+
+                    // Verify opcode roles
+                    for (const testOpcode of opcodes) {
+                        const actualMask = storage.rolesWithCapability.get(testOpcode) || 0n;
+                        expect(actualMask).toBe(expectedOpcodeRoles[testOpcode]);
+                    }
+
+                    // Verify user roles
+                    for (const testUser of users) {
+                        const actualUserMask = storage.userRoles.get(testUser) || 0n;
+                        expect(actualUserMask).toBe(expectedUserRoles[testUser.toString()]);
+                    }
+                }
+            }
         });
 
         it('should reject invalid role 256 (out of bounds)', async () => {
