@@ -19,9 +19,10 @@ export type TestConfig = {
 
 export function testConfigToCell(config: TestConfig): Cell {
     return beginCell()
+        .storeAddress(config.owner)
         .storeUint(config.id, 32)
         .storeUint(config.counter, 32)
-        .storeRef(beginCell().storeAddress(config.owner).storeDict(null).storeDict(null).storeDict(null).endCell())
+        .storeRef(beginCell().storeDict(null).storeDict(null).storeDict(null).endCell())
         .endCell();
 }
 

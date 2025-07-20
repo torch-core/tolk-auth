@@ -1,7 +1,8 @@
-import "auth";
+import "role-authority";
 
 // this struct defines storage layout of the contract
 struct Storage {
+    owner: address
     id: uint32  // required to allow multiple independent counter instances, since the contract address depends on its initial state
     counter: uint32 // the current counter value
     auth: Cell<Auth>

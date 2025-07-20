@@ -3,7 +3,8 @@ tolk 1.0
 import "constants/size";
 import "constants/type";
 import "storage";
-import "auth";
+import "role-authority";
+import "auth-check";
 
 // the struct uses a 32-bit opcode prefix for message identification
 struct (0x7e8764ef) IncreaseCounter {
@@ -40,21 +41,21 @@ fun onInternalMessage(in: InMessage) {
         SetUserRole => {
             var storage = lazy Storage.load();
             var auth = lazy storage.auth.load();
-            auth.requireAuth(in.senderAddress, OP_SET_USER_ROLE);
+            storage.owner.requireAuth(auth, in.senderAddress, OP_SET_USER_ROLE);
             storage.auth = auth.setUserRole(msg.user, msg.role, msg.enabled);
             storage.save();
         }
         SetRoleCapability => {
             var storage = lazy Storage.load();
             var auth = lazy storage.auth.load();
-            auth.requireAuth(in.senderAddress, OP_SET_ROLE_CAPABILITY);
+            storage.owner.requireAuth(auth, in.senderAddress, OP_SET_ROLE_CAPABILITY);
             storage.auth = auth.setRoleCapability(msg.role, msg.opcode, msg.enabled);
             storage.save();
         }
         SetPublicCapability => {
             var storage = lazy Storage.load();
             var auth = lazy storage.auth.load();
-            auth.requireAuth(in.senderAddress, OP_SET_PUBLIC_CAPABILITY);
+            storage.owner.requireAuth(auth, in.senderAddress, OP_SET_PUBLIC_CAPABILITY);
             storage.auth = auth.setPublicCapability(msg.opcode, msg.enabled);
             storage.save();
         }
