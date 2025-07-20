@@ -9,6 +9,21 @@ struct Auth {
     getRolesWithCapability: dict
 }
 
+fun Auth.setRoleCapability(mutate self, role: RoleMask, opcode: Opcode, enabled: bool) {
+    var (roleCapability, found) = self.isCapabilityPublic.uDictGet(OPCODE_SIZE, opcode);
+    val currentRoleCapability = (found ? roleCapability!.loadUint(ROLE_SIZE) : 0) as RoleMask;
+    val newRoleCapability = enabled ? (currentRoleCapability | 1 << role) : (currentRoleCapability & ~(1 << role));
+
+    self.isCapabilityPublic.uDictSet(OPCODE_SIZE, opcode, beginCell().storeUint(newRoleCapability, ROLE_SIZE).endCell().beginParse());
+
+    return self.toCell();
+}
+
+fun Auth.getRoleCapability(self, opcode: Opcode): RoleMask {
+    var (roleCapability, found) = self.isCapabilityPublic.uDictGet(OPCODE_SIZE, opcode);    
+    return (found ? roleCapability!.loadUint(ROLE_SIZE) : 0) as RoleMask;
+}
+
 fun Auth.setUserRole(mutate self, user: address, role: RoleMask, enabled: bool) {
     val userSlice = user as slice;
     var (userRole: slice?, found) = self.userRoles.sDictGet(ADDRESS_SIZE, userSlice);

@@ -29,6 +29,7 @@ export const Opcodes = {
     OP_INCREASE: 0x7e8764ef,
     OP_RESET: 0x3a752f06,
     OP_SET_USER_ROLE: 0xdd28b73e,
+    OP_SET_ROLE_CAPABILITY: 0xc6012bd0,
 };
 
 export class Test implements Contract {
@@ -99,16 +100,37 @@ export class Test implements Contract {
         user: Address,
         role: bigint,
         enabled: boolean,
-        queryID?: number,
+        queryID?: bigint,
     ) {
         await provider.internal(via, {
             value: toNano('0.1'),
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: beginCell()
                 .storeUint(Opcodes.OP_SET_USER_ROLE, OPCODE_SIZE)
-                .storeUint(queryID ?? 0, QUERY_ID_SIZE)
+                .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
                 .storeAddress(user)
                 .storeUint(role, 8)
+                .storeBit(enabled)
+                .endCell(),
+        });
+    }
+
+    async sendSetRoleCapability(
+        provider: ContractProvider,
+        via: Sender,
+        role: bigint,
+        opcode: number,
+        enabled: boolean,
+        queryID?: bigint,
+    ) {
+        await provider.internal(via, {
+            value: toNano('0.1'),
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(Opcodes.OP_SET_ROLE_CAPABILITY, OPCODE_SIZE)
+                .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
+                .storeUint(role, 8)
+                .storeUint(opcode, OPCODE_SIZE)
                 .storeBit(enabled)
                 .endCell(),
         });
@@ -129,6 +151,16 @@ export class Test implements Contract {
             {
                 type: 'slice',
                 cell: beginCell().storeAddress(user).endCell(),
+            },
+        ]);
+        return result.stack.readBigNumber();
+    }
+
+    async getRoleCapability(provider: ContractProvider, opcode: number) {
+        const result = await provider.get('roleCapability', [
+            {
+                type: 'int',
+                value: BigInt(opcode),
             },
         ]);
         return result.stack.readBigNumber();

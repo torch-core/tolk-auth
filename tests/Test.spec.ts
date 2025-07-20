@@ -1,6 +1,6 @@
-import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
+import { Blockchain, printTransactionFees, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Cell, toNano } from '@ton/core';
-import { Test } from '../wrappers/Test';
+import { Opcodes, Test } from '../wrappers/Test';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
 
@@ -14,6 +14,7 @@ describe('Test', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
     let test: SandboxContract<Test>;
+    const INCREASE_ROLE = 1n;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
@@ -45,13 +46,20 @@ describe('Test', () => {
         // blockchain and test are ready to use
     });
 
+    it('should set role capability', async () => {
+        const opcode = Opcodes.OP_INCREASE;
+        await test.sendSetRoleCapability(deployer.getSender(), INCREASE_ROLE, opcode, true);
+
+        const roleCapability = await test.getRoleCapability(opcode);
+        expect(roleCapability).toBe(1n << INCREASE_ROLE);
+    });
+
     it('should set user role', async () => {
-        const role = 1n;
-        await test.sendSetUserRole(deployer.getSender(), deployer.address, role, true);
+        await test.sendSetUserRole(deployer.getSender(), deployer.address, INCREASE_ROLE, true);
 
         // Get user role
         const userRole = await test.getUserRole(deployer.address);
-        expect(userRole).toBe(1n << role);
+        expect(userRole).toBe(1n << INCREASE_ROLE);
     });
 
     it('should increase counter', async () => {
