@@ -1,0 +1,1 @@
+type RoleMask = uint8;
