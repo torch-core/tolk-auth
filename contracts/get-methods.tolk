@@ -15,22 +15,22 @@ get fun initialId(): int {
     return storage.id;
 }
 
-get fun userRole(user: address): RoleMask {
+get fun doesUserHaveRole(user: address, role: RoleMask): bool {
     val storage = lazy Storage.load();
     val auth = lazy storage.auth.load();
-    return auth.getUserRoles(user);
+    return auth.doesUserHaveRole(user, role);
 }
 
-get fun roleCapability(opcode: Opcode): RoleMask {
+get fun doesRoleHaveCapability(role: RoleMask, opcode: Opcode): bool {
     val storage = lazy Storage.load();
     val auth = lazy storage.auth.load();
-    return auth.getRoleCapability(opcode);
+    return auth.doesRoleHaveCapability(role, opcode);
 }
 
-get fun publicCapability(opcode: Opcode): bool {
+get fun doesPublicCapabilityExist(opcode: Opcode): bool {
     val storage = lazy Storage.load();
     val auth = lazy storage.auth.load();
-    return auth.getPublicCapability(opcode);
+    return auth.doesPublicCapabilityExist(opcode);
 }
 
 get fun owner(): address {

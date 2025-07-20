@@ -169,14 +169,14 @@ export class Main implements Contract {
         });
     }
 
-    async getPublicCapability(provider: ContractProvider, opcode: number) {
-        const result = await provider.get('publicCapability', [
+    async getDoesPublicCapabilityExist(provider: ContractProvider, opcode: number) {
+        const result = await provider.get('doesPublicCapabilityExist', [
             {
                 type: 'int',
                 value: BigInt(opcode),
             },
         ]);
-        return result.stack.readBigNumber() == -1n ? true : false;
+        return result.stack.readBoolean();
     }
 
     async getCounter(provider: ContractProvider) {
@@ -189,24 +189,32 @@ export class Main implements Contract {
         return result.stack.readNumber();
     }
 
-    async getUserRole(provider: ContractProvider, user: Address) {
-        const result = await provider.get('userRole', [
+    async getDoesUserHaveRole(provider: ContractProvider, user: Address, role: bigint) {
+        const result = await provider.get('doesUserHaveRole', [
             {
                 type: 'slice',
                 cell: beginCell().storeAddress(user).endCell(),
             },
+            {
+                type: 'int',
+                value: role,
+            },
         ]);
-        return result.stack.readBigNumber();
+        return result.stack.readBoolean();
     }
 
-    async getRoleCapability(provider: ContractProvider, opcode: number) {
-        const result = await provider.get('roleCapability', [
+    async getDoesRoleHaveCapability(provider: ContractProvider, role: bigint, opcode: number) {
+        const result = await provider.get('doesRoleHaveCapability', [
+            {
+                type: 'int',
+                value: role,
+            },
             {
                 type: 'int',
                 value: BigInt(opcode),
             },
         ]);
-        return result.stack.readBigNumber();
+        return result.stack.readBoolean();
     }
 
     async getOwner(provider: ContractProvider) {
