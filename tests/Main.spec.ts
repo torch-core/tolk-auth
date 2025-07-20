@@ -41,21 +41,28 @@ describe('Test', () => {
         });
     });
 
-    it('should deploy', async () => {
-        // the check is done inside beforeEach
-        // blockchain and test are ready to use
-    });
-
     it('should set role capability', async () => {
         const opcode = Opcodes.OP_INCREASE;
-        await main.sendSetRoleCapability(deployer.getSender(), INCREASE_ROLE, opcode, true);
+        const result = await main.sendSetRoleCapability(deployer.getSender(), INCREASE_ROLE, opcode, true);
+        expect(result.transactions).toHaveTransaction({
+            from: deployer.address,
+            to: main.address,
+            success: true,
+            op: Opcodes.OP_SET_ROLE_CAPABILITY,
+        });
 
         const roleCapability = await main.getHasCapability(INCREASE_ROLE, opcode);
         expect(roleCapability).toBe(true);
     });
 
     it('should set user role', async () => {
-        await main.sendSetUserRole(deployer.getSender(), deployer.address, INCREASE_ROLE, true);
+        const result = await main.sendSetUserRole(deployer.getSender(), deployer.address, INCREASE_ROLE, true);
+        expect(result.transactions).toHaveTransaction({
+            from: deployer.address,
+            to: main.address,
+            success: true,
+            op: Opcodes.OP_SET_USER_ROLE,
+        });
 
         // Get user role
         const userRole = await main.getHasRole(deployer.address, INCREASE_ROLE);
@@ -64,14 +71,26 @@ describe('Test', () => {
 
     it('should set public capability', async () => {
         const opcode = Opcodes.OP_INCREASE;
-        await main.sendSetPublicCapability(deployer.getSender(), opcode, true);
+        const result = await main.sendSetPublicCapability(deployer.getSender(), opcode, true);
+        expect(result.transactions).toHaveTransaction({
+            from: deployer.address,
+            to: main.address,
+            success: true,
+            op: Opcodes.OP_SET_PUBLIC_CAPABILITY,
+        });
         const publicCapability = await main.getHasPublicCapability(opcode);
         expect(publicCapability).toBe(true);
     });
 
     it('should transfer ownership', async () => {
         const newOwner = await blockchain.treasury('newOwner');
-        await main.sendTransferOwnerShip(deployer.getSender(), newOwner.address);
+        const result = await main.sendTransferOwnerShip(deployer.getSender(), newOwner.address);
+        expect(result.transactions).toHaveTransaction({
+            from: deployer.address,
+            to: main.address,
+            success: true,
+            op: Opcodes.OP_TRANSFER_OWNERSHIP,
+        });
         const owner = await main.getOwner();
         expect(owner.equals(newOwner.address)).toBeTruthy();
     });
