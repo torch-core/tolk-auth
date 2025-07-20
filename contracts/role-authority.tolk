@@ -1,8 +1,10 @@
 import "@stdlib/tvm-dicts";
 import "constants/size";
 import "constants/type";
+import "constants/error";
 
 struct Auth {
+    owner: address
     userRoles: dict
     isCapabilityPublic: dict
     getRolesWithCapability: dict
@@ -82,4 +84,12 @@ fun Auth.canCall(self, user: address, opcode: Opcode): bool {
     val roleCapability = self.getRoleCapability(opcode);
 
     return (userRoles & roleCapability) != 0 || publicCapability;
+}
+
+fun Auth.isAuthorized(self, user: address, opcode: Opcode): bool {
+    return self.canCall(user, opcode) || user == self.owner;
+}
+
+fun Auth.requireAuth(self, user: address, opcode: Opcode) {
+    assert(self.isAuthorized(user, opcode), ERROR_NOT_AUTHORIZED);
 }
