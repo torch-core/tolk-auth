@@ -1,5 +1,5 @@
 import { Address, toNano } from '@ton/core';
-import { Test } from '../wrappers/Test';
+import { main } from '../wrappers/Main';
 import { NetworkProvider, sleep } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider, args: string[]) {
@@ -12,7 +12,7 @@ export async function run(provider: NetworkProvider, args: string[]) {
         return;
     }
 
-    const test = provider.open(Test.createFromAddress(address));
+    const test = provider.open(main.createFromAddress(address));
 
     const counterBefore = await test.getCounter();
 

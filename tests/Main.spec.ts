@@ -1,6 +1,6 @@
-import { Blockchain, printTransactionFees, SandboxContract, TreasuryContract } from '@ton/sandbox';
+import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Cell, toNano } from '@ton/core';
-import { Opcodes, Test } from '../wrappers/Test';
+import { Opcodes, Main } from '../wrappers/Main';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
 
@@ -8,20 +8,20 @@ describe('Test', () => {
     let code: Cell;
 
     beforeAll(async () => {
-        code = await compile('Test');
+        code = await compile('Main');
     });
 
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    let test: SandboxContract<Test>;
+    let main: SandboxContract<Main>;
     const INCREASE_ROLE = 1n;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
         deployer = await blockchain.treasury('deployer');
 
-        test = blockchain.openContract(
-            Test.createFromConfig(
+        main = blockchain.openContract(
+            Main.createFromConfig(
                 {
                     id: 0,
                     counter: 0,
@@ -31,11 +31,11 @@ describe('Test', () => {
             ),
         );
 
-        const deployResult = await test.sendDeploy(deployer.getSender(), toNano('0.05'));
+        const deployResult = await main.sendDeploy(deployer.getSender(), toNano('0.05'));
 
         expect(deployResult.transactions).toHaveTransaction({
             from: deployer.address,
-            to: test.address,
+            to: main.address,
             deploy: true,
             success: true,
         });
@@ -48,24 +48,24 @@ describe('Test', () => {
 
     it('should set role capability', async () => {
         const opcode = Opcodes.OP_INCREASE;
-        await test.sendSetRoleCapability(deployer.getSender(), INCREASE_ROLE, opcode, true);
+        await main.sendSetRoleCapability(deployer.getSender(), INCREASE_ROLE, opcode, true);
 
-        const roleCapability = await test.getRoleCapability(opcode);
+        const roleCapability = await main.getRoleCapability(opcode);
         expect(roleCapability).toBe(1n << INCREASE_ROLE);
     });
 
     it('should set user role', async () => {
-        await test.sendSetUserRole(deployer.getSender(), deployer.address, INCREASE_ROLE, true);
+        await main.sendSetUserRole(deployer.getSender(), deployer.address, INCREASE_ROLE, true);
 
         // Get user role
-        const userRole = await test.getUserRole(deployer.address);
+        const userRole = await main.getUserRole(deployer.address);
         expect(userRole).toBe(1n << INCREASE_ROLE);
     });
 
     it('should set public capability', async () => {
         const opcode = Opcodes.OP_INCREASE;
-        await test.sendSetPublicCapability(deployer.getSender(), opcode, true);
-        const publicCapability = await test.getPublicCapability(opcode);
+        await main.sendSetPublicCapability(deployer.getSender(), opcode, true);
+        const publicCapability = await main.getPublicCapability(opcode);
         expect(publicCapability).toBe(true);
     });
 
@@ -76,7 +76,7 @@ describe('Test', () => {
 
             const increaser = await blockchain.treasury('increaser' + i);
 
-            const counterBefore = await test.getCounter();
+            const counterBefore = await main.getCounter();
 
             console.log('counter before increasing', counterBefore);
 
@@ -84,18 +84,18 @@ describe('Test', () => {
 
             console.log('increasing by', increaseBy);
 
-            const increaseResult = await test.sendIncrease(increaser.getSender(), {
+            const increaseResult = await main.sendIncrease(increaser.getSender(), {
                 increaseBy,
                 value: toNano('0.05'),
             });
 
             expect(increaseResult.transactions).toHaveTransaction({
                 from: increaser.address,
-                to: test.address,
+                to: main.address,
                 success: true,
             });
 
-            const counterAfter = await test.getCounter();
+            const counterAfter = await main.getCounter();
 
             console.log('counter after increasing', counterAfter);
 
@@ -106,20 +106,20 @@ describe('Test', () => {
     it('should reset counter', async () => {
         const increaser = await blockchain.treasury('increaser');
 
-        expect(await test.getCounter()).toBe(0);
+        expect(await main.getCounter()).toBe(0);
 
         const increaseBy = 5;
-        await test.sendIncrease(increaser.getSender(), {
+        await main.sendIncrease(increaser.getSender(), {
             increaseBy,
             value: toNano('0.05'),
         });
 
-        expect(await test.getCounter()).toBe(increaseBy);
+        expect(await main.getCounter()).toBe(increaseBy);
 
-        await test.sendReset(increaser.getSender(), {
+        await main.sendReset(increaser.getSender(), {
             value: toNano('0.05'),
         });
 
-        expect(await test.getCounter()).toBe(0);
+        expect(await main.getCounter()).toBe(0);
     });
 });

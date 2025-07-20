@@ -23,37 +23,33 @@ type AllowedMessage = IncreaseCounter | ResetCounter | AuthMessages
 fun onInternalMessage(in: InMessage) {
     // use `lazy` to defer loading fields until they are accessed
     val msg = lazy AllowedMessage.fromSlice(in.body);
+    var storage = lazy Storage.load();
+    var auth = lazy storage.auth.load();
 
     match (msg) {
         IncreaseCounter => {
+            // auth.requireAuth(in.senderAddress, IncreaseCounter.getDeclaredPackPrefix());
             // load contract storage lazily (efficient for large or partial reads/updates)
-            var storage = lazy Storage.load();
             storage.counter += msg.increaseBy;
             storage.save();
         }
 
         ResetCounter => {
-            var storage = lazy Storage.load();
+            // auth.requireAuth(in.senderAddress, ResetCounter.getDeclaredPackPrefix());
             storage.counter = 0;
             storage.save();
         }
         SetUserRole => {
-            var storage = lazy Storage.load();
-            var auth = lazy storage.auth.load();
             auth.requireAuth(in.senderAddress, OP_SET_USER_ROLE);
             storage.auth = auth.setUserRole(msg.user, msg.role, msg.enabled);
             storage.save();
         }
         SetRoleCapability => {
-            var storage = lazy Storage.load();
-            var auth = lazy storage.auth.load();
             auth.requireAuth(in.senderAddress, OP_SET_ROLE_CAPABILITY);
             storage.auth = auth.setRoleCapability(msg.role, msg.opcode, msg.enabled);
             storage.save();
         }
         SetPublicCapability => {
-            var storage = lazy Storage.load();
-            var auth = lazy storage.auth.load();
             auth.requireAuth(in.senderAddress, OP_SET_PUBLIC_CAPABILITY);
             storage.auth = auth.setPublicCapability(msg.opcode, msg.enabled);
             storage.save();

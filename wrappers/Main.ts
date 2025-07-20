@@ -11,13 +11,13 @@ import {
 } from '@ton/core';
 import { OPCODE_SIZE, QUERY_ID_SIZE } from './constants/size';
 
-export type TestConfig = {
+export type MainConfig = {
     id: number;
     counter: number;
     owner: Address;
 };
 
-export function testConfigToCell(config: TestConfig): Cell {
+export function mainConfigToCell(config: MainConfig): Cell {
     return beginCell()
         .storeUint(config.id, 32)
         .storeUint(config.counter, 32)
@@ -33,20 +33,20 @@ export const Opcodes = {
     OP_SET_PUBLIC_CAPABILITY: 0x714a73bb,
 };
 
-export class Test implements Contract {
+export class Main implements Contract {
     constructor(
         readonly address: Address,
         readonly init?: { code: Cell; data: Cell },
     ) {}
 
     static createFromAddress(address: Address) {
-        return new Test(address);
+        return new Main(address);
     }
 
-    static createFromConfig(config: TestConfig, code: Cell, workchain = 0) {
-        const data = testConfigToCell(config);
+    static createFromConfig(config: MainConfig, code: Cell, workchain = 0) {
+        const data = mainConfigToCell(config);
         const init = { code, data };
-        return new Test(contractAddress(workchain, init), init);
+        return new Main(contractAddress(workchain, init), init);
     }
 
     async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {
