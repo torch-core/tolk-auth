@@ -32,3 +32,9 @@ get fun publicCapability(opcode: Opcode): bool {
     val auth = lazy storage.auth.load();
     return auth.getPublicCapability(opcode);
 }
+
+get fun owner(): address {
+    val storage = lazy Storage.load();
+    val auth = lazy storage.auth.load();
+    return auth.owner;
+}

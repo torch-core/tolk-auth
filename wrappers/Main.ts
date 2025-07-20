@@ -31,6 +31,7 @@ export const Opcodes = {
     OP_SET_USER_ROLE: 0xdd28b73e,
     OP_SET_ROLE_CAPABILITY: 0xc6012bd0,
     OP_SET_PUBLIC_CAPABILITY: 0x714a73bb,
+    OP_TRANSFER_OWNERSHIP: 0xdb819bf9,
 };
 
 export class Main implements Contract {
@@ -156,6 +157,18 @@ export class Main implements Contract {
         });
     }
 
+    async sendTransferOwnerShip(provider: ContractProvider, via: Sender, newOwner: Address, queryID?: bigint) {
+        await provider.internal(via, {
+            value: toNano('0.1'),
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(Opcodes.OP_TRANSFER_OWNERSHIP, OPCODE_SIZE)
+                .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
+                .storeAddress(newOwner)
+                .endCell(),
+        });
+    }
+
     async getPublicCapability(provider: ContractProvider, opcode: number) {
         const result = await provider.get('publicCapability', [
             {
@@ -194,5 +207,10 @@ export class Main implements Contract {
             },
         ]);
         return result.stack.readBigNumber();
+    }
+
+    async getOwner(provider: ContractProvider) {
+        const result = await provider.get('owner', []);
+        return result.stack.readAddress();
     }
 }

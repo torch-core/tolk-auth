@@ -69,6 +69,13 @@ describe('Test', () => {
         expect(publicCapability).toBe(true);
     });
 
+    it('should transfer ownership', async () => {
+        const newOwner = await blockchain.treasury('newOwner');
+        await main.sendTransferOwnerShip(deployer.getSender(), newOwner.address);
+        const owner = await main.getOwner();
+        expect(owner.equals(newOwner.address)).toBeTruthy();
+    });
+
     it('should increase counter', async () => {
         const increaseTimes = 3;
         for (let i = 0; i < increaseTimes; i++) {

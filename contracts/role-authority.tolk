@@ -30,11 +30,17 @@ struct (0x714a73bb) SetPublicCapability {
     enabled: bool
 }
 
+struct (0xdb819bf9) TransferOwnerShip {
+    queryId: QueryID
+    newOwner: address
+}
+
 const OP_SET_USER_ROLE = SetUserRole.getDeclaredPackPrefix();
 const OP_SET_ROLE_CAPABILITY = SetRoleCapability.getDeclaredPackPrefix();
 const OP_SET_PUBLIC_CAPABILITY = SetPublicCapability.getDeclaredPackPrefix();
+const OP_TRANSFER_OWNERSHIP = TransferOwnerShip.getDeclaredPackPrefix();
 
-type AuthMessages = SetUserRole | SetRoleCapability | SetPublicCapability;
+type AuthMessages = SetUserRole | SetRoleCapability | SetPublicCapability | TransferOwnerShip;
 
 fun Auth.setPublicCapability(mutate self, opcode: Opcode, enabled: bool) {
     self.isCapabilityPublic.uDictSet(OPCODE_SIZE, opcode, beginCell().storeBool(enabled).endCell().beginParse());

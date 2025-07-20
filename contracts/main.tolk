@@ -39,6 +39,12 @@ fun onInternalMessage(in: InMessage) {
             storage.auth = auth.setPublicCapability(msg.opcode, msg.enabled);
             storage.save();
         }
+        TransferOwnerShip => {
+            auth.requireAuth(in.senderAddress, OP_TRANSFER_OWNERSHIP);
+            auth.owner = msg.newOwner;
+            storage.auth = auth.toCell();
+            storage.save();
+        }
         else => {
             // ignore empty messages, "wrong opcode" for others
             assert (in.body.isEmpty()) throw ERR_INVALID_OPCODE
