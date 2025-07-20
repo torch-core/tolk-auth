@@ -26,14 +26,14 @@ fun Auth.getUserRoles(self, user: address): RoleMask {
 }
 
 fun Auth.setPublicCapability(mutate self, opcode: Opcode, enabled: bool) {
-    self.isCapabilityPublic.uDictSet(OPCODE_SIZE, opcode, beginCell().storeBool(enabled).endCell().beginParse());
+    self.isCapabilityPublic.uDictSet(OPCODE_SIZE, opcode, packToSlice(enabled));
     return self.toCell();
 }
 
 fun Auth.setRoleCapability(mutate self, role: RoleMask, opcode: Opcode, enabled: bool) {
     val currentRoleCapability = self.getRoleCapability(opcode);
     val newRoleCapability = enabled ? (currentRoleCapability | 1 << role) : (currentRoleCapability & ~(1 << role));
-    self.rolesWithCapability.uDictSet(OPCODE_SIZE, opcode, beginCell().storeUint(newRoleCapability, ROLE_SIZE).endCell().beginParse());
+    self.rolesWithCapability.uDictSet(OPCODE_SIZE, opcode, packToSlice(newRoleCapability));
 
     return self.toCell();
 }
@@ -41,8 +41,15 @@ fun Auth.setRoleCapability(mutate self, role: RoleMask, opcode: Opcode, enabled:
 fun Auth.setUserRole(mutate self, user: address, role: RoleMask, enabled: bool) {
     val currentRoles = self.getUserRoles(user);
     val newRoles = enabled ? (currentRoles | 1 << role) : (currentRoles & ~(1 << role));
-    self.userRoles.sDictSet(ADDRESS_SIZE, user as slice, beginCell().storeUint(newRoles, ROLE_SIZE).endCell().beginParse());
+    self.userRoles.sDictSet(ADDRESS_SIZE, user as slice, packToSlice(newRoles));
 
     return self.toCell();
 }
 
+// helper functions
+fun packToSlice(value: uint8 | bool): slice {
+    match (value) {
+        uint8 => return beginCell().storeUint(value, ROLE_SIZE).endCell().beginParse(),
+        bool => return beginCell().storeBool(value).endCell().beginParse(),
+    }
+}
