@@ -3,6 +3,7 @@ tolk 1.0
 import "constants/size";
 import "constants/type";
 import "storage";
+import "auth";
 
 // the struct uses a 32-bit opcode prefix for message identification
 struct (0x7e8764ef) IncreaseCounter {

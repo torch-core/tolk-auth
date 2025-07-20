@@ -11,7 +11,7 @@ struct Auth {
 
 fun Auth.setUserRole(mutate self, user: address, role: RoleMask, enabled: bool) {
     val userSlice = user as slice;
-    var (userRole, found) = self.userRoles.sDictGet(ADDRESS_SIZE, userSlice);
+    var (userRole: slice?, found) = self.userRoles.sDictGet(ADDRESS_SIZE, userSlice);
     val currentRoles = (found ? userRole!.loadUint(ROLE_SIZE) : 0) as RoleMask;
     val newRoles = enabled ? (currentRoles | 1 << role) : (currentRoles & ~(1 << role));
     

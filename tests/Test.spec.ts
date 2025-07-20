@@ -17,18 +17,18 @@ describe('Test', () => {
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
+        deployer = await blockchain.treasury('deployer');
 
         test = blockchain.openContract(
             Test.createFromConfig(
                 {
                     id: 0,
                     counter: 0,
+                    owner: deployer.address,
                 },
-                code
-            )
+                code,
+            ),
         );
-
-        deployer = await blockchain.treasury('deployer');
 
         const deployResult = await test.sendDeploy(deployer.getSender(), toNano('0.05'));
 
@@ -43,6 +43,15 @@ describe('Test', () => {
     it('should deploy', async () => {
         // the check is done inside beforeEach
         // blockchain and test are ready to use
+    });
+
+    it('should set user role', async () => {
+        const role = 1n;
+        await test.sendSetUserRole(deployer.getSender(), deployer.address, role, true);
+
+        // Get user role
+        const userRole = await test.getUserRole(deployer.address);
+        expect(userRole).toBe(1n << role);
     });
 
     it('should increase counter', async () => {

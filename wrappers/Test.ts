@@ -1,17 +1,34 @@
-import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode } from '@ton/core';
+import {
+    Address,
+    beginCell,
+    Cell,
+    Contract,
+    contractAddress,
+    ContractProvider,
+    Sender,
+    SendMode,
+    toNano,
+} from '@ton/core';
+import { OPCODE_SIZE, QUERY_ID_SIZE } from './constants/size';
 
 export type TestConfig = {
     id: number;
     counter: number;
+    owner: Address;
 };
 
 export function testConfigToCell(config: TestConfig): Cell {
-    return beginCell().storeUint(config.id, 32).storeUint(config.counter, 32).endCell();
+    return beginCell()
+        .storeUint(config.id, 32)
+        .storeUint(config.counter, 32)
+        .storeRef(beginCell().storeAddress(config.owner).storeDict(null).storeDict(null).storeDict(null).endCell())
+        .endCell();
 }
 
 export const Opcodes = {
     OP_INCREASE: 0x7e8764ef,
     OP_RESET: 0x3a752f06,
+    OP_SET_USER_ROLE: 0xdd28b73e,
 };
 
 export class Test implements Contract {
@@ -76,6 +93,27 @@ export class Test implements Contract {
         });
     }
 
+    async sendSetUserRole(
+        provider: ContractProvider,
+        via: Sender,
+        user: Address,
+        role: bigint,
+        enabled: boolean,
+        queryID?: number,
+    ) {
+        await provider.internal(via, {
+            value: toNano('0.1'),
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(Opcodes.OP_SET_USER_ROLE, OPCODE_SIZE)
+                .storeUint(queryID ?? 0, QUERY_ID_SIZE)
+                .storeAddress(user)
+                .storeUint(role, 8)
+                .storeBit(enabled)
+                .endCell(),
+        });
+    }
+
     async getCounter(provider: ContractProvider) {
         const result = await provider.get('currentCounter', []);
         return result.stack.readNumber();
@@ -84,5 +122,15 @@ export class Test implements Contract {
     async getID(provider: ContractProvider) {
         const result = await provider.get('initialId', []);
         return result.stack.readNumber();
+    }
+
+    async getUserRole(provider: ContractProvider, user: Address) {
+        const result = await provider.get('userRole', [
+            {
+                type: 'slice',
+                cell: beginCell().storeAddress(user).endCell(),
+            },
+        ]);
+        return result.stack.readBigNumber();
     }
 }
