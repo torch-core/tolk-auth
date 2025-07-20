@@ -431,43 +431,74 @@ describe('Role Authority Test', () => {
             expect(await main.getHasRole(testUser, roles[1])).toBe(false);
         });
 
-        it('should handle all 8 roles edge case testing', async () => {
+        it('should handle all 256 roles edge case testing', async () => {
             const opcode = Opcodes.OP_INCREASE;
-            const allRoles = [0n, 1n, 2n, 3n, 4n, 5n, 6n, 7n];
-
-            // Add all 8 roles
-            for (const role of allRoles) {
+            
+            // Add all 256 roles (0-255)
+            for (let role = 0n; role < 256n; role++) {
                 await main.sendSetRoleCapability(owner.getSender(), role, opcode, true);
             }
 
-            // Should have all bits set (0xFF = 255)
+            // Should have all bits set (2^256 - 1)
             const storage = await main.getStorage();
-            expect(storage.rolesWithCapability.get(opcode)).toBe(255n);
+            const maxValue = (1n << 256n) - 1n;
+            expect(storage.rolesWithCapability.get(opcode)).toBe(maxValue);
 
-            // Verify each role individually
-            for (const role of allRoles) {
+            // Verify some sample roles
+            const sampleRoles = [0n, 1n, 127n, 128n, 254n, 255n];
+            for (const role of sampleRoles) {
                 expect(await main.getHasCapability(role, opcode)).toBe(true);
             }
 
-            // Remove even numbered roles (0, 2, 4, 6)
-            const evenRoles = [0n, 2n, 4n, 6n];
-            for (const role of evenRoles) {
+            // Remove even numbered roles (0, 2, 4, 6, ..., 254)
+            for (let role = 0n; role < 256n; role += 2n) {
                 await main.sendSetRoleCapability(owner.getSender(), role, opcode, false);
             }
 
-            // Should have odd roles remaining (1, 3, 5, 7) = 170 (0xAA)
+            // Should have odd roles remaining (1, 3, 5, 7, ..., 255)
             const storageAfterEvenRemoval = await main.getStorage();
-            expect(storageAfterEvenRemoval.rolesWithCapability.get(opcode)).toBe(170n);
+            // Calculate expected value: sum of 2^i where i is odd from 1 to 255
+            let expectedOddMask = 0n;
+            for (let i = 1n; i < 256n; i += 2n) {
+                expectedOddMask |= (1n << i);
+            }
+            expect(storageAfterEvenRemoval.rolesWithCapability.get(opcode)).toBe(expectedOddMask);
 
-            // Verify remaining roles
-            const oddRoles = [1n, 3n, 5n, 7n];
-            for (const role of oddRoles) {
+            // Verify remaining odd roles
+            const sampleOddRoles = [1n, 3n, 5n, 127n, 129n, 255n];
+            for (const role of sampleOddRoles) {
                 expect(await main.getHasCapability(role, opcode)).toBe(true);
             }
-            for (const role of evenRoles) {
+            
+            // Verify removed even roles
+            const sampleEvenRoles = [0n, 2n, 4n, 126n, 128n, 254n];
+            for (const role of sampleEvenRoles) {
                 expect(await main.getHasCapability(role, opcode)).toBe(false);
             }
         });
+
+        // it('should reject invalid role 256 (out of bounds)', async () => {
+        //     const opcode = Opcodes.OP_INCREASE;
+        //     const invalidRole = 253n; // Should be out of bounds for 256-bit mask (valid range: 0-255)
+
+        //     // Attempt to set role capability for invalid role 256
+        //     const result = await main.sendSetRoleCapability(owner.getSender(), invalidRole, opcode, true);
+            
+        //     expect(result.transactions).toHaveTransaction({
+        //         from: owner.address,
+        //         to: main.address,
+        //         success: false,
+        //     });
+
+        //     // Attempt to assign invalid role 256 to user
+        //     const userRoleResult = await main.sendSetUserRole(owner.getSender(), maxey.address, invalidRole, true);
+            
+        //     expect(userRoleResult.transactions).toHaveTransaction({
+        //         from: owner.address,
+        //         to: main.address,
+        //         success: false,
+        //     });
+        // });
 
         it('should handle complex mixed add/remove operations', async () => {
             const opcodes = [Opcodes.OP_INCREASE, Opcodes.OP_RESET];
