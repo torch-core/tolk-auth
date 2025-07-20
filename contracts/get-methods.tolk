@@ -24,13 +24,13 @@ get fun hasPublicCapability(opcode: Opcode): bool {
     return auth.hasPublicCapability(opcode);
 }
 
-get fun hasCapability(role: RoleMask, opcode: Opcode): bool {
+get fun hasCapability(role: RoleId, opcode: Opcode): bool {
     val storage = lazy Storage.load();
     val auth = lazy storage.auth.load();
     return auth.hasCapability(role, opcode);
 }
 
-get fun hasRole(user: address, role: RoleMask): bool {
+get fun hasRole(user: address, role: RoleId): bool {
     val storage = lazy Storage.load();
     val auth = lazy storage.auth.load();
     return auth.hasRole(user, role);

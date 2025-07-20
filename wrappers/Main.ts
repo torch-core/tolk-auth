@@ -10,7 +10,7 @@ import {
     SendMode,
     toNano,
 } from '@ton/core';
-import { COUNTER_SIZE, ID_SIZE, OPCODE_SIZE, QUERY_ID_SIZE, ROLE_SIZE } from './constants/size';
+import { COUNTER_SIZE, ID_SIZE, OPCODE_SIZE, QUERY_ID_SIZE, ROLE_ID_SIZE, ROLE_MASK_SIZE } from './constants/size';
 
 export type MainConfig = {
     id: number;
@@ -20,8 +20,8 @@ export type MainConfig = {
 
 export function mainConfigToCell(config: MainConfig): Cell {
     return beginCell()
-        .storeUint(config.id, 32)
-        .storeUint(config.counter, 32)
+        .storeUint(config.id, ID_SIZE)
+        .storeUint(config.counter, COUNTER_SIZE)
         .storeRef(beginCell().storeAddress(config.owner).storeDict(null).storeDict(null).storeDict(null).endCell())
         .endCell();
 }
@@ -76,21 +76,21 @@ export class Main implements Contract {
         };
     }
 
-    static createSetRoleCapabilityArg(role: number, opcode: number, enabled: boolean, queryID?: bigint) {
+    static createSetRoleCapabilityArg(role: bigint, opcode: number, enabled: boolean, queryID?: bigint) {
         return {
             value: toNano('0.03'),
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: beginCell()
                 .storeUint(Opcodes.OP_SET_ROLE_CAPABILITY, OPCODE_SIZE)
                 .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
-                .storeUint(role, 8)
+                .storeUint(role, ROLE_ID_SIZE)
                 .storeUint(opcode, OPCODE_SIZE)
                 .storeBit(enabled)
                 .endCell(),
         };
     }
 
-    static createSetUserRoleArg(user: Address, role: number, enabled: boolean, queryID?: bigint) {
+    static createSetUserRoleArg(user: Address, role: bigint, enabled: boolean, queryID?: bigint) {
         return {
             value: toNano('0.03'),
             sendMode: SendMode.PAY_GAS_SEPARATELY,
@@ -98,7 +98,7 @@ export class Main implements Contract {
                 .storeUint(Opcodes.OP_SET_USER_ROLE, OPCODE_SIZE)
                 .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
                 .storeAddress(user)
-                .storeUint(role, 8)
+                .storeUint(role, ROLE_ID_SIZE)
                 .storeBit(enabled)
                 .endCell(),
         };
@@ -125,9 +125,9 @@ export class Main implements Contract {
             value: opts.value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: beginCell()
-                .storeUint(Opcodes.OP_INCREASE, 32)
-                .storeUint(opts.queryID ?? 0, 64)
-                .storeUint(opts.increaseBy, 32)
+                .storeUint(Opcodes.OP_INCREASE, OPCODE_SIZE)
+                .storeUint(opts.queryID ?? 0, QUERY_ID_SIZE)
+                .storeUint(opts.increaseBy, COUNTER_SIZE)
                 .endCell(),
         });
     }
@@ -144,8 +144,8 @@ export class Main implements Contract {
             value: opts.value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: beginCell()
-                .storeUint(Opcodes.OP_RESET, 32)
-                .storeUint(opts.queryID ?? 0, 64)
+                .storeUint(Opcodes.OP_RESET, OPCODE_SIZE)
+                .storeUint(opts.queryID ?? 0, QUERY_ID_SIZE)
                 .endCell(),
         });
     }
@@ -163,7 +163,7 @@ export class Main implements Contract {
     async sendSetRoleCapability(
         provider: ContractProvider,
         via: Sender,
-        role: number,
+        role: bigint,
         opcode: number,
         enabled: boolean,
         queryID?: bigint,
@@ -175,7 +175,7 @@ export class Main implements Contract {
         provider: ContractProvider,
         via: Sender,
         user: Address,
-        role: number,
+        role: bigint,
         enabled: boolean,
         queryID?: bigint,
     ) {
@@ -214,11 +214,11 @@ export class Main implements Contract {
         return result.stack.readBoolean();
     }
 
-    async getHasCapability(provider: ContractProvider, role: number, opcode: number) {
+    async getHasCapability(provider: ContractProvider, role: bigint, opcode: number) {
         const result = await provider.get('hasCapability', [
             {
                 type: 'int',
-                value: BigInt(role),
+                value: role,
             },
             {
                 type: 'int',
@@ -228,7 +228,7 @@ export class Main implements Contract {
         return result.stack.readBoolean();
     }
 
-    async getHasRole(provider: ContractProvider, user: Address, role: number) {
+    async getHasRole(provider: ContractProvider, user: Address, role: bigint) {
         const result = await provider.get('hasRole', [
             {
                 type: 'slice',
@@ -236,7 +236,7 @@ export class Main implements Contract {
             },
             {
                 type: 'int',
-                value: BigInt(role),
+                value: role,
             },
         ]);
         return result.stack.readBoolean();
@@ -264,9 +264,9 @@ export class Main implements Contract {
         const isCapabilityPublic = authSlice.loadDict(Dictionary.Keys.Uint(OPCODE_SIZE), Dictionary.Values.Bool());
         const rolesWithCapability = authSlice.loadDict(
             Dictionary.Keys.Uint(OPCODE_SIZE),
-            Dictionary.Values.Uint(ROLE_SIZE),
+            Dictionary.Values.BigUint(256),
         );
-        const userRoles = authSlice.loadDict(Dictionary.Keys.Address(), Dictionary.Values.Uint(ROLE_SIZE));
+        const userRoles = authSlice.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(ROLE_MASK_SIZE));
 
         return { id, counter, owner, userRoles, rolesWithCapability, isCapabilityPublic };
     }

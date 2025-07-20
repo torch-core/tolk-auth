@@ -1,4 +1,4 @@
-import { Blockchain, printTransactionFees, SandboxContract, TreasuryContract } from '@ton/sandbox';
+import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Cell, toNano } from '@ton/core';
 import { Opcodes, Main, ErrorCodes } from '../wrappers/Main';
 import '@ton/test-utils';
@@ -15,7 +15,7 @@ describe('Role Authority Test', () => {
     let owner: SandboxContract<TreasuryContract>;
     let maxey: SandboxContract<TreasuryContract>;
     let main: SandboxContract<Main>;
-    const RESET_ROLE = 0;
+    const RESET_ROLE = 0n;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
@@ -101,7 +101,7 @@ describe('Role Authority Test', () => {
 
             // Check Role capability
             const storage = await main.getStorage();
-            expect(storage.rolesWithCapability.get(opcode)).toBe(1 << RESET_ROLE);
+            expect(storage.rolesWithCapability.get(opcode)).toBe(1n << RESET_ROLE);
 
             // Unset role capability
             const result2 = await main.sendSetRoleCapability(owner.getSender(), RESET_ROLE, opcode, false);
@@ -122,7 +122,7 @@ describe('Role Authority Test', () => {
 
             // Check Role capability
             const storage2 = await main.getStorage();
-            expect(storage2.rolesWithCapability.get(opcode)).toBe(0);
+            expect(storage2.rolesWithCapability.get(opcode)).toBe(0n);
         });
         it('should set user role and unset user role', async () => {
             // Set maxey to have RESET_ROLE
@@ -144,7 +144,7 @@ describe('Role Authority Test', () => {
 
             // Check User role
             const storage = await main.getStorage();
-            expect(storage.userRoles.get(maxey.address)).toBe(1 << RESET_ROLE);
+            expect(storage.userRoles.get(maxey.address)).toBe(1n << RESET_ROLE);
 
             // Unset user role
             const result2 = await main.sendSetUserRole(owner.getSender(), maxey.address, RESET_ROLE, false);
@@ -165,7 +165,7 @@ describe('Role Authority Test', () => {
 
             // Check User role
             const storage2 = await main.getStorage();
-            expect(storage2.userRoles.get(maxey.address)).toBe(0);
+            expect(storage2.userRoles.get(maxey.address)).toBe(0n);
         });
         it('should transfer ownership', async () => {
             // Create new owner
@@ -339,19 +339,19 @@ describe('Role Authority Test', () => {
 
     describe('Complex bit mask verification tests', () => {
         // Helper functions for bit calculation verification
-        const calculateRoleMask = (roles: number[]): number => {
-            return roles.reduce((mask, role) => mask | (1 << role), 0);
+        const calculateRoleMask = (roles: bigint[]): bigint => {
+            return roles.reduce((mask, role) => mask | (1n << role), 0n);
         };
 
         it('should correctly manage multiple roles for OP_RESET capability', async () => {
             const opcode = Opcodes.OP_RESET;
-            const testRoles = [0, 1, 2, 4, 7]; // Test various roles including edge cases
-            let expectedMask = 0;
+            const testRoles = [0n, 1n, 2n, 4n, 7n]; // Test various roles including edge cases
+            let expectedMask = 0n;
 
             // Add roles one by one and verify bit mask
             for (const role of testRoles) {
                 await main.sendSetRoleCapability(owner.getSender(), role, opcode, true);
-                expectedMask |= 1 << role;
+                expectedMask |= 1n << role;
 
                 const storage = await main.getStorage();
                 const actualMask = storage.rolesWithCapability.get(opcode) || 0;
@@ -367,17 +367,17 @@ describe('Role Authority Test', () => {
             // Remove roles one by one and verify bit mask
             for (const role of testRoles) {
                 await main.sendSetRoleCapability(owner.getSender(), role, opcode, false);
-                expectedMask &= ~(1 << role);
+                expectedMask &= ~(1n << role);
 
                 const storage = await main.getStorage();
-                const actualMask = storage.rolesWithCapability.get(opcode) || 0;
+                const actualMask = storage.rolesWithCapability.get(opcode);
 
                 expect(actualMask).toBe(expectedMask);
                 expect(await main.getHasCapability(role, opcode)).toBe(false);
             }
 
             // Final mask should be 0
-            expect((await main.getStorage()).rolesWithCapability.get(opcode)).toBe(0);
+            expect((await main.getStorage()).rolesWithCapability.get(opcode)).toBe(0n);
         });
 
         it('should correctly manage multiple opcodes for single user', async () => {
@@ -389,8 +389,8 @@ describe('Role Authority Test', () => {
                 Opcodes.OP_SET_USER_ROLE,
             ];
             const testUser = maxey.address;
-            const roles = opcodes.map((_, index) => index + 1); // Roles for different opcodes
-            let expectedUserMask = 0;
+            const roles = opcodes.map((_, index) => BigInt(index) + 1n); // Roles for different opcodes
+            let expectedUserMask = 0n;
 
             // Set capabilities for different opcodes
             for (let i = 0; i < opcodes.length; i++) {
@@ -402,7 +402,7 @@ describe('Role Authority Test', () => {
 
                 // Give user the role
                 await main.sendSetUserRole(owner.getSender(), testUser, role, true);
-                expectedUserMask |= 1 << role;
+                expectedUserMask |= 1n << role;
 
                 const storage = await main.getStorage();
                 const actualUserMask = storage.userRoles.get(testUser) || 0;
@@ -412,10 +412,10 @@ describe('Role Authority Test', () => {
             }
 
             // Add multiple additional roles to same user
-            const additionalRoles = [6, 7, 0]; // Test more roles
+            const additionalRoles = [6n, 7n, 0n]; // Test more roles
             for (const additionalRole of additionalRoles) {
                 await main.sendSetUserRole(owner.getSender(), testUser, additionalRole, true);
-                expectedUserMask |= 1 << additionalRole;
+                expectedUserMask |= 1n << additionalRole;
 
                 const storage = await main.getStorage();
                 expect(storage.userRoles.get(testUser)).toBe(expectedUserMask);
@@ -424,7 +424,7 @@ describe('Role Authority Test', () => {
 
             // Remove roles selectively
             await main.sendSetUserRole(owner.getSender(), testUser, roles[1], false);
-            expectedUserMask &= ~(1 << roles[1]);
+            expectedUserMask &= ~(1n << roles[1]);
 
             const storageAfterRemoval = await main.getStorage();
             expect(storageAfterRemoval.userRoles.get(testUser)).toBe(expectedUserMask);
@@ -433,7 +433,7 @@ describe('Role Authority Test', () => {
 
         it('should handle all 8 roles edge case testing', async () => {
             const opcode = Opcodes.OP_INCREASE;
-            const allRoles = [0, 1, 2, 3, 4, 5, 6, 7];
+            const allRoles = [0n, 1n, 2n, 3n, 4n, 5n, 6n, 7n];
 
             // Add all 8 roles
             for (const role of allRoles) {
@@ -442,7 +442,7 @@ describe('Role Authority Test', () => {
 
             // Should have all bits set (0xFF = 255)
             const storage = await main.getStorage();
-            expect(Number(storage.rolesWithCapability.get(opcode))).toBe(255);
+            expect(storage.rolesWithCapability.get(opcode)).toBe(255n);
 
             // Verify each role individually
             for (const role of allRoles) {
@@ -450,17 +450,17 @@ describe('Role Authority Test', () => {
             }
 
             // Remove even numbered roles (0, 2, 4, 6)
-            const evenRoles = [0, 2, 4, 6];
+            const evenRoles = [0n, 2n, 4n, 6n];
             for (const role of evenRoles) {
                 await main.sendSetRoleCapability(owner.getSender(), role, opcode, false);
             }
 
             // Should have odd roles remaining (1, 3, 5, 7) = 170 (0xAA)
             const storageAfterEvenRemoval = await main.getStorage();
-            expect(Number(storageAfterEvenRemoval.rolesWithCapability.get(opcode))).toBe(170);
+            expect(storageAfterEvenRemoval.rolesWithCapability.get(opcode)).toBe(170n);
 
             // Verify remaining roles
-            const oddRoles = [1, 3, 5, 7];
+            const oddRoles = [1n, 3n, 5n, 7n];
             for (const role of oddRoles) {
                 expect(await main.getHasCapability(role, opcode)).toBe(true);
             }
@@ -476,36 +476,36 @@ describe('Role Authority Test', () => {
 
             // Complex sequence of operations
             const operations = [
-                { type: 'roleCapability' as const, role: 1, opcode: opcodes[0], enabled: true },
-                { type: 'roleCapability' as const, role: 2, opcode: opcodes[0], enabled: true },
-                { type: 'userRole' as const, user: user1, role: 1, enabled: true },
-                { type: 'roleCapability' as const, role: 3, opcode: opcodes[1], enabled: true },
-                { type: 'userRole' as const, user: user1, role: 2, enabled: true },
-                { type: 'userRole' as const, user: user2.address, role: 3, enabled: true },
-                { type: 'roleCapability' as const, role: 1, opcode: opcodes[0], enabled: false }, // Remove role 1 from OP_INCREASE
-                { type: 'userRole' as const, user: user1, role: 1, enabled: false }, // Remove role 1 from user1
-                { type: 'roleCapability' as const, role: 4, opcode: opcodes[1], enabled: true },
-                { type: 'userRole' as const, user: user2.address, role: 4, enabled: true },
+                { type: 'roleCapability' as const, role: 1n, opcode: opcodes[0], enabled: true },
+                { type: 'roleCapability' as const, role: 2n, opcode: opcodes[0], enabled: true },
+                { type: 'userRole' as const, user: user1, role: 1n, enabled: true },
+                { type: 'roleCapability' as const, role: 3n, opcode: opcodes[1], enabled: true },
+                { type: 'userRole' as const, user: user1, role: 2n, enabled: true },
+                { type: 'userRole' as const, user: user2.address, role: 3n, enabled: true },
+                { type: 'roleCapability' as const, role: 1n, opcode: opcodes[0], enabled: false }, // Remove role 1 from OP_INCREASE
+                { type: 'userRole' as const, user: user1, role: 1n, enabled: false }, // Remove role 1 from user1
+                { type: 'roleCapability' as const, role: 4n, opcode: opcodes[1], enabled: true },
+                { type: 'userRole' as const, user: user2.address, role: 4n, enabled: true },
             ];
 
-            let expectedOpcodeRoles = { [opcodes[0]]: 0, [opcodes[1]]: 0 };
-            let expectedUserRoles = { [user1.toString()]: 0, [user2.address.toString()]: 0 };
+            let expectedOpcodeRoles = { [opcodes[0]]: 0n, [opcodes[1]]: 0n };
+            let expectedUserRoles = { [user1.toString()]: 0n, [user2.address.toString()]: 0n };
 
             for (const op of operations) {
                 if (op.type === 'roleCapability') {
                     await main.sendSetRoleCapability(owner.getSender(), op.role, op.opcode, op.enabled);
                     if (op.enabled) {
-                        expectedOpcodeRoles[op.opcode] |= 1 << op.role;
+                        expectedOpcodeRoles[op.opcode] |= 1n << op.role;
                     } else {
-                        expectedOpcodeRoles[op.opcode] &= ~(1 << op.role);
+                        expectedOpcodeRoles[op.opcode] &= ~(1n << op.role);
                     }
                 } else if (op.type === 'userRole') {
                     await main.sendSetUserRole(owner.getSender(), op.user, op.role, op.enabled);
                     const userKey = op.user.toString();
                     if (op.enabled) {
-                        expectedUserRoles[userKey] |= 1 << op.role;
+                        expectedUserRoles[userKey] |= 1n << op.role;
                     } else {
-                        expectedUserRoles[userKey] &= ~(1 << op.role);
+                        expectedUserRoles[userKey] &= ~(1n << op.role);
                     }
                 }
 
@@ -514,22 +514,22 @@ describe('Role Authority Test', () => {
 
                 for (const opcode of opcodes) {
                     const actualMask = storage.rolesWithCapability.get(opcode) || 0n;
-                    expect(Number(actualMask)).toBe(expectedOpcodeRoles[opcode]);
+                    expect(actualMask).toBe(expectedOpcodeRoles[opcode]);
                 }
 
                 const actualUser1Mask = storage.userRoles.get(user1) || 0n;
                 const actualUser2Mask = storage.userRoles.get(user2.address) || 0n;
-                expect(Number(actualUser1Mask)).toBe(expectedUserRoles[user1.toString()]);
-                expect(Number(actualUser2Mask)).toBe(expectedUserRoles[user2.address.toString()]);
+                expect(actualUser1Mask).toBe(expectedUserRoles[user1.toString()]);
+                expect(actualUser2Mask).toBe(expectedUserRoles[user2.address.toString()]);
             }
 
             // Final verification: user1 should have role 2, user2 should have roles 3 and 4
-            expect(Number((await main.getStorage()).userRoles.get(user1))).toBe(4); // 1 << 2
-            expect(Number((await main.getStorage()).userRoles.get(user2.address))).toBe(24); // (1 << 3) | (1 << 4)
+            expect((await main.getStorage()).userRoles.get(user1)).toBe(4n); // 1 << 2
+            expect((await main.getStorage()).userRoles.get(user2.address)).toBe(24n); // (1 << 3) | (1 << 4)
 
             // OP_INCREASE should have role 2, OP_RESET should have roles 3 and 4
-            expect(Number((await main.getStorage()).rolesWithCapability.get(opcodes[0]))).toBe(4); // 1 << 2
-            expect(Number((await main.getStorage()).rolesWithCapability.get(opcodes[1]))).toBe(24); // (1 << 3) | (1 << 4)
+            expect((await main.getStorage()).rolesWithCapability.get(opcodes[0])).toBe(4n); // 1 << 2
+            expect((await main.getStorage()).rolesWithCapability.get(opcodes[1])).toBe(24n); // (1 << 3) | (1 << 4)
         });
     });
 });
