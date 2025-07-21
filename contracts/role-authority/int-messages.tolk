@@ -1,10 +1,9 @@
 import "constants/type";
 
 /* Auth internal messages structs */
-struct (0xdd28b73e) SetUserRole {
+struct (0x714a73bb) SetPublicCapability {
     queryId: QueryID
-    user: address
-    role: uint8
+    opcode: uint32
     enabled: bool
 }
 
@@ -15,9 +14,10 @@ struct (0xc6012bd0) SetRoleCapability {
     enabled: bool
 }
 
-struct (0x714a73bb) SetPublicCapability {
+struct (0xdd28b73e) SetUserRole {
     queryId: QueryID
-    opcode: uint32
+    user: address
+    role: uint8
     enabled: bool
 }
 
@@ -33,6 +33,7 @@ struct (0xb835b5cb) ClaimOwnership {
 struct (0x3d89e313) RevokePendingOwnership {
     queryId: QueryID
 }
+
 /* Auth internal messages opcodes */
 const OP_SET_USER_ROLE = SetUserRole.getDeclaredPackPrefix();
 const OP_SET_ROLE_CAPABILITY = SetRoleCapability.getDeclaredPackPrefix();
