@@ -40,8 +40,8 @@ fun Auth.getPublicCapability(self, opcode: Opcode): bool {
 /// @return The role mask for the opcode (0 if not found).
 @pure
 fun Auth.getRoleCapability(self, opcode: Opcode): RoleMask {
-    var (roleMask, found) = self.rolesWithCapability.uDictGet(OPCODE_SIZE, opcode);    
-    return (found ? roleMask!.loadUint(ROLE_MASK_SIZE) : 0) as RoleMask;
+    var (opRoleMask, found) = self.rolesWithCapability.uDictGet(OPCODE_SIZE, opcode);    
+    return (found ? opRoleMask!.loadUint(ROLE_MASK_SIZE) : 0) as RoleMask;
 }
 
 /// Retrieves the role mask for a given user.

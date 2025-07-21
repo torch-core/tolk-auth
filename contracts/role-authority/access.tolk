@@ -8,11 +8,11 @@ import "constants/error";
 /// @param role The role ID to query.
 /// @return True if the user has the role, false otherwise.
 /// @dev Checks the bit at position `role` in the user's RoleMask using bitwise operations.
-///      Specifically: (userRoles >> role) shifts the bit to the lowest position, & 1 isolates it.
+///      Specifically: (userRoleMask >> role) shifts the bit to the lowest position, & 1 isolates it.
 @pure
 fun Auth.hasRole(self, user: address, role: RoleId): bool {
-    val userRoles = self.getUserRoles(user);
-    return ((userRoles >> role) & 1) != 0;
+    val userRoleMask = self.getUserRoles(user);
+    return ((userRoleMask >> role) & 1) != 0;
 }
 
 /// Checks if a role has capability for a specific opcode.
@@ -22,8 +22,8 @@ fun Auth.hasRole(self, user: address, role: RoleId): bool {
 /// @return True if the role has the capability, false otherwise.
 /// @dev Uses the same bitmask logic as `hasRole` to check the role's permission on the opcode.
 fun Auth.hasCapability(self, role: RoleId, opcode: Opcode): bool {
-    val roleCapability = self.getRoleCapability(opcode);
-    return ((roleCapability >> role) & 1) != 0;
+    val opRoleMask = self.getRoleCapability(opcode);
+    return ((opRoleMask >> role) & 1) != 0;
 }
 
 /// Checks if an opcode has public capability.
@@ -32,8 +32,7 @@ fun Auth.hasCapability(self, role: RoleId, opcode: Opcode): bool {
 /// @return True if the opcode has public capability, false otherwise.
 @pure
 fun Auth.hasPublicCapability(self, opcode: Opcode): bool {
-    val publicCapability = self.getPublicCapability(opcode);
-    return publicCapability;
+    return self.getPublicCapability(opcode);
 }
 
 /// Determines if a user can call a specific opcode based on roles or public capability.
@@ -42,14 +41,14 @@ fun Auth.hasPublicCapability(self, opcode: Opcode): bool {
 /// @param opcode The opcode to query.
 /// @return True if the user can call the opcode, false otherwise.
 /// @dev Returns true if the opcode is marked public, or if the user's RoleMask intersects
-///      with the opcode's RoleMask (i.e., (userRoles & roleCapability) != 0).
+///      with the opcode's RoleMask (i.e., (userRoleMask & opRoleMask) != 0).
 @pure
 fun Auth.canCall(self, user: address, opcode: Opcode): bool {
-    val userRoles = self.getUserRoles(user);
-    val publicCapability = self.getPublicCapability(opcode);
-    val roleCapability = self.getRoleCapability(opcode);
+    val userRoleMask = self.getUserRoles(user);
+    val isPublic = self.getPublicCapability(opcode);
+    val opRoleMask = self.getRoleCapability(opcode);
 
-    return (userRoles & roleCapability) != 0 || publicCapability;
+    return (userRoleMask & opRoleMask) != 0 || isPublic;
 }
 
 /// Checks if a user is authorized for an opcode, including owner fallback.
