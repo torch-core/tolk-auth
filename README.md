@@ -48,7 +48,7 @@ struct Auth {
 - `userRoles`: Dictionary mapping user addresses to their role masks (RoleMask).
 
 During contract deployment, initialize the Auth structure with the owner and timelock period using `Auth.init(owner: address, timelockPeriod: Timestamp)`. For example:
-```tolk
+```solidity
 storage.auth = Auth.init(deployer_address, 86400); // 1 day timelock
 ```
 This ensures the system starts with an owner and defined timelock, avoiding unowned states.
@@ -57,7 +57,7 @@ This ensures the system starts with an owner and defined timelock, avoiding unow
 
 `OwnerInfo` encapsulates ownership transfer information, including timelock parameters:
 
-```tolk
+```solidity
 struct OwnerInfo {
     owner: address                  // Address of the contract owner, who also manages the authority logic.
     pendingOwner: address           // Address of the pending owner, who can claim the ownership after the timelock period.
@@ -75,7 +75,7 @@ struct OwnerInfo {
 
 Send a `SetPublicCapability` message to set whether an opcode is publicly callable.
 
-```tolk
+```solidity
 struct (0x714a73bb) SetPublicCapability {
     queryId: QueryID
     opcode: Opcode
@@ -92,7 +92,7 @@ struct (0x714a73bb) SetPublicCapability {
 
 Send a `SetRoleCapability` message to assign or remove role permissions for a specific opcode.
 
-```tolk
+```solidity
 struct (0xc6012bd0) SetRoleCapability {
     queryId: QueryID
     role: RoleId
@@ -111,7 +111,7 @@ struct (0xc6012bd0) SetRoleCapability {
 
 Send a `SetUserRole` message to assign or remove a role for a specific user.
 
-```tolk
+```solidity
 struct (0xdd28b73e) SetUserRole {
     queryId: QueryID
     user: address
@@ -157,7 +157,7 @@ These get methods are optional; you can read the contract state off-chain to ach
 To integrate the Role Authority module into your TON contract:
 
 1. Add the Auth structure to your contract's storage layout:
-   ```tolk
+   ```solidity
    struct Storage {
        id: uint32
        counter: uint32
@@ -166,13 +166,13 @@ To integrate the Role Authority module into your TON contract:
    ```
 
 2. Add AuthMessages to your AllowedMessage union:
-   ```tolk
+   ```solidity
    // Union AuthMessages to AllowedMessage to enable the Auth system.
    type AllowedMessage = IncreaseCounter | ResetCounter | AuthMessages;
    ```
 
 3. In `onInternalMessage`, add match cases for AuthMessages:
-   ```tolk
+   ```solidity
    /* Auth internal messages */
    SetPublicCapability => {
        auth.requireAuth(in.senderAddress, OP_SET_PUBLIC_CAPABILITY);
