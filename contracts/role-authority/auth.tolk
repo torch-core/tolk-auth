@@ -30,8 +30,8 @@ struct OwnerInfo {
 /// @return True if the opcode has public capability, false otherwise.
 @pure
 fun Auth.getPublicCapability(self, opcode: Opcode): bool {
-    var (publicCapability, found) = self.isCapabilityPublic.uDictGet(OPCODE_SIZE, opcode);
-    return found ? publicCapability!.loadBool() : false;
+    var (isPublic, found) = self.isCapabilityPublic.uDictGet(OPCODE_SIZE, opcode);
+    return found ? isPublic!.loadBool() : false;
 }
 
 /// Retrieves the role mask for a given opcode's capabilities.
@@ -40,8 +40,8 @@ fun Auth.getPublicCapability(self, opcode: Opcode): bool {
 /// @return The role mask for the opcode (0 if not found).
 @pure
 fun Auth.getRoleCapability(self, opcode: Opcode): RoleMask {
-    var (roleCapability, found) = self.rolesWithCapability.uDictGet(OPCODE_SIZE, opcode);    
-    return (found ? roleCapability!.loadUint(ROLE_MASK_SIZE) : 0) as RoleMask;
+    var (roleMask, found) = self.rolesWithCapability.uDictGet(OPCODE_SIZE, opcode);    
+    return (found ? roleMask!.loadUint(ROLE_MASK_SIZE) : 0) as RoleMask;
 }
 
 /// Retrieves the role mask for a given user.
@@ -50,9 +50,8 @@ fun Auth.getRoleCapability(self, opcode: Opcode): RoleMask {
 /// @return The role mask for the user (0 if not found).
 @pure
 fun Auth.getUserRoles(self, user: address): RoleMask {
-    val userSlice = user as slice;
-    var (userRoleCell, found) = self.userRoles.sDictGet(ADDRESS_SIZE, userSlice);
-    return (found ? userRoleCell!.loadUint(ROLE_MASK_SIZE) : 0) as RoleMask;
+    var (userRoleMask, found) = self.userRoles.sDictGet(ADDRESS_SIZE, user as slice);
+    return (found ? userRoleMask!.loadUint(ROLE_MASK_SIZE) : 0) as RoleMask;
 }
 
 /// Sets the public capability for a given opcode.
@@ -74,9 +73,9 @@ fun Auth.setPublicCapability(mutate self, opcode: Opcode, enabled: bool) {
 /// @param enabled True to enable the role for the opcode, false to disable.
 /// @dev Emits an TOPIC_ROLE_CAPABILITY_UPDATED event after updating the role capability.
 fun Auth.setRoleCapability(mutate self, role: RoleId, opcode: Opcode, enabled: bool) {
-    val currentRoleCapability = self.getRoleCapability(opcode);
-    val newRoleCapability = enabled ? (currentRoleCapability | 1 << role) : (currentRoleCapability & ~(1 << role));
-    self.rolesWithCapability.uDictSet(OPCODE_SIZE, opcode, beginCell().storeUint(newRoleCapability, ROLE_MASK_SIZE).endCell().beginParse());
+    val currentMask = self.getRoleCapability(opcode);
+    val newMask = enabled ? (currentMask | 1 << role) : (currentMask & ~(1 << role));
+    self.rolesWithCapability.uDictSet(OPCODE_SIZE, opcode, beginCell().storeUint(newMask, ROLE_MASK_SIZE).endCell().beginParse());
     emitRoleCapabilityUpdated(opcode, role, enabled);
 
     return self.toCell();
@@ -89,9 +88,9 @@ fun Auth.setRoleCapability(mutate self, role: RoleId, opcode: Opcode, enabled: b
 /// @param enabled True to enable the role for the user, false to disable.
 /// @dev Emits an TOPIC_USER_ROLE_UPDATED event after updating the user's role.
 fun Auth.setUserRole(mutate self, user: address, role: RoleId, enabled: bool) {
-    val currentRoles = self.getUserRoles(user);
-    val newRoles = enabled ? (currentRoles | 1 << role) : (currentRoles & ~(1 << role));
-    self.userRoles.sDictSet(ADDRESS_SIZE, user as slice, beginCell().storeUint(newRoles, ROLE_MASK_SIZE).endCell().beginParse());
+    val currentMask = self.getUserRoles(user);
+    val newMask = enabled ? (currentMask | 1 << role) : (currentMask & ~(1 << role));
+    self.userRoles.sDictSet(ADDRESS_SIZE, user as slice, beginCell().storeUint(newMask, ROLE_MASK_SIZE).endCell().beginParse());
     emitUserRoleUpdated(user, role, enabled);
     
     return self.toCell();
