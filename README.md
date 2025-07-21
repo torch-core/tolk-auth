@@ -36,7 +36,9 @@ To determine if a user can call a specific opcode:
 
 ### 📦 Auth Structure
 
-The `Auth` structure is the core data structure of the permission system, managing the owner and permission dictionaries. It supports up to 256 roles, using bitmasks in RoleMask (uint256). Add this structure to your contract's storage layout:
+- The `Auth` structure is the core data structure of the permission system, managing the owner and permission dictionaries. 
+- It supports up to 256 roles, using bitmasks in RoleMask (uint256). 
+- Add this structure to your contract's storage layout:
 
 ```solidity
 struct Auth {
@@ -52,11 +54,7 @@ struct Auth {
 - `rolesWithCapability`: Dictionary mapping opcodes to allowed role masks (RoleMask).
 - `userRoles`: Dictionary mapping user addresses to their role masks (RoleMask).
 
-During contract deployment, initialize the Auth structure with the owner and timelock period using `Auth.init(owner: address, timelockPeriod: Timestamp)`. For example:
-```solidity
-storage.auth = Auth.init(deployer_address, 86400); // 1 day timelock
-```
-This ensures the system starts with an owner and defined timelock, avoiding unowned states.
+During contract deployment, initialize the Auth structure with the owner and timelock period.
 
 ### 👤 OwnerInfo Structure
 
@@ -72,7 +70,7 @@ struct OwnerInfo {
 ```
 
 - `owner`: The current contract owner address with full control.
-- `pendingOwner`: The pending owner address (address 0 indicates no pending transfer).
+- `pendingOwner`: The pending owner address (null indicates no pending transfer).
 - `timelockPeriod`: The timelock duration for ownership transfer (in seconds, e.g., 86400 seconds = 1 day).
 - `proposeTime`: The timestamp of the ownership transfer proposal (0 indicates no proposal).
 
