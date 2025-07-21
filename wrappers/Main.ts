@@ -332,11 +332,11 @@ export class Main implements Contract {
     async getStorage(provider: ContractProvider): Promise<MainStorage> {
         const { state } = await provider.getState();
         if (state.type !== 'active' || !state.code || !state.data) {
-            throw new Error('tgUSDEngine is not active');
+            throw new Error('Main Contract is not active');
         }
         const storageBoc = Cell.fromBoc(state.data)[0];
         if (!storageBoc) {
-            throw new Error('Main is not initialized');
+            throw new Error('Main Contract is not initialized');
         }
         const storageSlice = storageBoc.beginParse();
         const id = storageSlice.loadUint(ID_SIZE);
