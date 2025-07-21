@@ -1,6 +1,8 @@
 import "@stdlib/tvm-dicts";
 import "constants/size";
 import "constants/type";
+import "messages";
+import "log";
 
 struct Auth {
     owner: address
@@ -27,6 +29,8 @@ fun Auth.getUserRoles(self, user: address): RoleMask {
 
 fun Auth.setPublicCapability(mutate self, opcode: Opcode, enabled: bool) {
     self.isCapabilityPublic.uDictSet(OPCODE_SIZE, opcode, beginCell().storeBool(enabled).endCell().beginParse());
+    emitPublicCapabilityUpdated(opcode, enabled);
+
     return self.toCell();
 }
 
@@ -34,6 +38,7 @@ fun Auth.setRoleCapability(mutate self, role: RoleId, opcode: Opcode, enabled: b
     val currentRoleCapability = self.getRoleCapability(opcode);
     val newRoleCapability = enabled ? (currentRoleCapability | 1 << role) : (currentRoleCapability & ~(1 << role));
     self.rolesWithCapability.uDictSet(OPCODE_SIZE, opcode, beginCell().storeUint(newRoleCapability, ROLE_MASK_SIZE).endCell().beginParse());
+    emitRoleCapabilityUpdated(opcode, role, enabled);
 
     return self.toCell();
 }
@@ -42,6 +47,7 @@ fun Auth.setUserRole(mutate self, user: address, role: RoleId, enabled: bool) {
     val currentRoles = self.getUserRoles(user);
     val newRoles = enabled ? (currentRoles | 1 << role) : (currentRoles & ~(1 << role));
     self.userRoles.sDictSet(ADDRESS_SIZE, user as slice, beginCell().storeUint(newRoles, ROLE_MASK_SIZE).endCell().beginParse());
-
+    emitUserRoleUpdated(user, role, enabled);
+    
     return self.toCell();
 }

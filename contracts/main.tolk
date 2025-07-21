@@ -7,6 +7,7 @@ import "get-methods";
 import "role-authority/auth";
 import "role-authority/access";
 import "role-authority/messages";
+import "role-authority/log";
 
 fun onInternalMessage(in: InMessage) {
     val msg = lazy AllowedMessage.fromSlice(in.body);
@@ -44,6 +45,7 @@ fun onInternalMessage(in: InMessage) {
             // A timelock mechanism for admin changes can also be implemented here.
             auth.requireAuth(in.senderAddress, OP_TRANSFER_OWNERSHIP);
             auth.owner = msg.newOwner;
+            emitOwnershipTransferred(in.senderAddress, msg.newOwner);
             storage.auth = auth.toCell();
             storage.save();
         }
