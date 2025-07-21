@@ -1,9 +1,14 @@
-import { Blockchain, SandboxContract, SendMessageResult, TreasuryContract } from '@ton/sandbox';
-import { Address, Cell, toNano } from '@ton/core';
-import { Opcodes, Main, ErrorCodes, Roles, Topics } from '../wrappers/Main';
+import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
+import { Cell, toNano } from '@ton/core';
+import { Opcodes, Main, ErrorCodes, Roles } from '../wrappers/Main';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
-import { OPCODE_SIZE, ROLE_ID_SIZE } from '../wrappers/constants/size';
+import {
+    expectOwnershipTransferredEmitLog,
+    expectPublicCapabilityEmitLog,
+    expectRoleCapabilityEmitLog,
+    expectUserRoleEmitLog,
+} from './helper/log';
 
 describe('Role Authority Test', () => {
     let code: Cell;
@@ -16,45 +21,6 @@ describe('Role Authority Test', () => {
     let owner: SandboxContract<TreasuryContract>;
     let maxey: SandboxContract<TreasuryContract>;
     let main: SandboxContract<Main>;
-
-    // Helper function to check PUBLIC_CAPABILITY_UPDATED emit log
-    function expectPublicCapabilityEmitLog(result: SendMessageResult, opcode: number, enabled: boolean) {
-        expect(result.externals[0].info.dest?.value).toBe(Topics.PUBLIC_CAPABILITY_UPDATED);
-        const extBody = result.externals[0].body.beginParse();
-
-        expect(extBody.loadUintBig(OPCODE_SIZE)).toBe(Topics.PUBLIC_CAPABILITY_UPDATED);
-        expect(extBody.loadUint(OPCODE_SIZE)).toBe(opcode);
-        expect(extBody.loadBoolean()).toBe(enabled);
-    }
-
-    function expectRoleCapabilityEmitLog(result: SendMessageResult, role: bigint, opcode: number, enabled: boolean) {
-        expect(result.externals[0].info.dest?.value).toBe(Topics.ROLE_CAPABILITY_UPDATED);
-        const extBody = result.externals[0].body.beginParse();
-
-        expect(extBody.loadUintBig(OPCODE_SIZE)).toBe(Topics.ROLE_CAPABILITY_UPDATED);
-        expect(extBody.loadUint(OPCODE_SIZE)).toBe(opcode);
-        expect(extBody.loadUintBig(ROLE_ID_SIZE)).toBe(role);
-        expect(extBody.loadBoolean()).toBe(enabled);
-    }
-
-    function expectUserRoleEmitLog(result: SendMessageResult, user: Address, role: bigint, enabled: boolean) {
-        expect(result.externals[0].info.dest?.value).toBe(Topics.USER_ROLE_UPDATED);
-        const extBody = result.externals[0].body.beginParse();
-
-        expect(extBody.loadUintBig(OPCODE_SIZE)).toBe(Topics.USER_ROLE_UPDATED);
-        expect(extBody.loadAddress().equals(user)).toBeTruthy();
-        expect(extBody.loadUintBig(ROLE_ID_SIZE)).toBe(role);
-        expect(extBody.loadBoolean()).toBe(enabled);
-    }
-
-    function expectOwnershipTransferredEmitLog(result: SendMessageResult, sender: Address, newOwner: Address) {
-        expect(result.externals[0].info.dest?.value).toBe(Topics.OWNERSHIP_TRANSFERRED);
-        const extBody = result.externals[0].body.beginParse();
-
-        expect(extBody.loadUintBig(OPCODE_SIZE)).toBe(Topics.OWNERSHIP_TRANSFERRED);
-        expect(extBody.loadAddress().equals(sender)).toBeTruthy();
-        expect(extBody.loadAddress().equals(newOwner)).toBeTruthy();
-    }
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
