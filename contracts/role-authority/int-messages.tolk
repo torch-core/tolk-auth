@@ -21,16 +21,25 @@ struct (0x714a73bb) SetPublicCapability {
     enabled: bool
 }
 
-struct (0x7bb334c7) TransferOwnership {
+struct (0x9c25dd71) ProposeOwnership {
     queryId: QueryID
     newOwner: address
 }
 
+struct (0xb835b5cb) ClaimOwnership {
+    queryId: QueryID
+}
+
+struct (0x3d89e313) RevokePendingOwnership {
+    queryId: QueryID
+}
 /* Auth internal messages opcodes */
 const OP_SET_USER_ROLE = SetUserRole.getDeclaredPackPrefix();
 const OP_SET_ROLE_CAPABILITY = SetRoleCapability.getDeclaredPackPrefix();
 const OP_SET_PUBLIC_CAPABILITY = SetPublicCapability.getDeclaredPackPrefix();
-const OP_TRANSFER_OWNERSHIP = TransferOwnership.getDeclaredPackPrefix();
+const OP_PROPOSE_OWNERSHIP = ProposeOwnership.getDeclaredPackPrefix();
+const OP_CLAIM_OWNERSHIP = ClaimOwnership.getDeclaredPackPrefix();
+const OP_REVOKE_PENDING_OWNERSHIP = RevokePendingOwnership.getDeclaredPackPrefix();
 
 // Add `AuthMessages` to your internal messages union to enable the Auth system. 
-type AuthMessages = SetUserRole | SetRoleCapability | SetPublicCapability | TransferOwnership;
+type AuthMessages = SetUserRole | SetRoleCapability | SetPublicCapability | ProposeOwnership | ClaimOwnership | RevokePendingOwnership;

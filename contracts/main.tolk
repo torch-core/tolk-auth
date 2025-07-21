@@ -3,11 +3,11 @@ tolk 1.0
 import "constants/error";
 import "int-messages";
 import "storage";
-import "get-methods";
 import "role-authority/auth";
 import "role-authority/access";
 import "role-authority/int-messages";
 import "role-authority/ext-messages";
+import "get-methods"; // Enables off-chain access to get methods. Removing this will disable them.
 
 fun onInternalMessage(in: InMessage) {
     val msg = lazy AllowedMessage.fromSlice(in.body);
@@ -43,12 +43,27 @@ fun onInternalMessage(in: InMessage) {
             storage.auth = auth.setUserRole(msg.user, msg.role, msg.enabled);
             storage.save();
         }
-        TransferOwnership => {
-            // NOTE: This is a basic ownership transfer implementation. 
-            // A timelock mechanism for admin changes can also be implemented here.
-            auth.requireAuth(in.senderAddress, OP_TRANSFER_OWNERSHIP);
-            auth.owner = msg.newOwner;
-            emitOwnershipTransferred(in.senderAddress, msg.newOwner);
+        ProposeOwnership => {
+            auth.requireAuth(in.senderAddress, OP_PROPOSE_OWNERSHIP);
+            auth.pendingOwner = msg.newOwner;
+            auth.proposeTime = blockchain.now();
+            emitOwnershipProposed(in.senderAddress, msg.newOwner);
+            storage.auth = auth.toCell();
+            storage.save();
+        }
+        ClaimOwnership => {
+            auth.requirePendingOwner(in.senderAddress);
+            auth.requireTimelockPassed();
+            auth.owner = in.senderAddress;
+            auth.pendingOwner = createAddressNone();
+            emitOwnershipClaimed(in.senderAddress);
+            storage.auth = auth.toCell();
+            storage.save();
+        }
+        RevokePendingOwnership => {
+            auth.requireAuth(in.senderAddress, OP_REVOKE_PENDING_OWNERSHIP);
+            emitOwnershipRevoked(in.senderAddress, auth.pendingOwner);
+            auth.pendingOwner = createAddressNone();
             storage.auth = auth.toCell();
             storage.save();
         }

@@ -4,3 +4,4 @@ export const ID_SIZE = 32;
 export const COUNTER_SIZE = 32;
 export const ROLE_ID_SIZE = 8;
 export const ROLE_MASK_SIZE = 256;
+export const TIMESTAMP_SIZE = 32;

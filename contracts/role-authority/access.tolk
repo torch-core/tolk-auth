@@ -70,3 +70,18 @@ fun Auth.isAuthorized(self, user: address, opcode: Opcode): bool {
 fun Auth.requireAuth(self, user: address, opcode: Opcode) {
     assert(self.isAuthorized(user, opcode), ERR_NOT_AUTHORIZED);
 }
+
+/// Requires that the sender is the pending owner.
+/// @param self The Auth structure instance.
+/// @param sender The address of the sender to claim the ownership.
+/// @dev Throws ERR_NOT_PENDING_OWNER if sender is not the pending owner.
+fun Auth.requirePendingOwner(self, sender: address) {
+    assert(sender == self.pendingOwner, ERR_NOT_PENDING_OWNER);
+}
+
+/// Requires that the timelock period has passed for a pending ownership transfer.
+/// @param self The Auth structure instance.
+/// @dev Throws ERR_CLAIM_TOO_EARLY if the timelock period has not elapsed.
+fun Auth.requireTimelockPassed(self) {
+    assert(blockchain.now() >= self.proposeTime + self.timelockPeriod, ERR_CLAIM_TOO_EARLY);
+}

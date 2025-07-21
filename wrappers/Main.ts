@@ -10,19 +10,30 @@ import {
     SendMode,
     toNano,
 } from '@ton/core';
-import { COUNTER_SIZE, ID_SIZE, OPCODE_SIZE, QUERY_ID_SIZE, ROLE_ID_SIZE, ROLE_MASK_SIZE } from './constants/size';
+import { COUNTER_SIZE, ID_SIZE, OPCODE_SIZE, QUERY_ID_SIZE, ROLE_ID_SIZE, ROLE_MASK_SIZE, TIMESTAMP_SIZE } from './constants/size';
 
 export type MainConfig = {
     id: number;
     counter: number;
     owner: Address;
+    timelockPeriod: number;
 };
 
 export function mainConfigToCell(config: MainConfig): Cell {
     return beginCell()
         .storeUint(config.id, ID_SIZE)
         .storeUint(config.counter, COUNTER_SIZE)
-        .storeRef(beginCell().storeAddress(config.owner).storeDict(null).storeDict(null).storeDict(null).endCell())
+        .storeRef(
+            beginCell()
+                .storeAddress(config.owner)
+                .storeAddress(null) // pendingOwner
+                .storeUint(config.timelockPeriod, TIMESTAMP_SIZE)
+                .storeUint(0, TIMESTAMP_SIZE) // proposeTime
+                .storeDict(null) // isCapabilityPublic
+                .storeDict(null) // rolesWithCapability
+                .storeDict(null) // userRoles
+                .endCell(),
+        )
         .endCell();
 }
 
