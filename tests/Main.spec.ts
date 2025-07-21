@@ -334,6 +334,21 @@ describe('Role Authority Test', () => {
 
             expect(await main.getCounter()).toBe(0);
         });
+
+        it('should only owner can transfer ownership', async () => {
+            // maxey try to transfer ownership to new owner
+            const newOwner = await blockchain.treasury('newOwner');
+            const result = await main.sendTransferOwnerShip(maxey.getSender(), newOwner.address);
+
+            // Expect maxey sends OP_TRANSFER_OWNERSHIP to main and exit with NOT_AUTHORIZED
+            expect(result.transactions).toHaveTransaction({
+                from: maxey.address,
+                to: main.address,
+                success: false,
+                op: Opcodes.OP_TRANSFER_OWNERSHIP,
+                exitCode: ErrorCodes.NOT_AUTHORIZED,
+            });
+        });
     });
 
     describe('Complex bit mask verification tests', () => {
