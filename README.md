@@ -134,14 +134,14 @@ struct (0xdd28b73e) SetUserRole {
 Ownership transfer is implemented as a two-stage process with a timelock for security.
 
 - Process:
-  - The current owner sends a ProposeOwnership message specifying the new owner.
+  - The current owner sends a `ProposeOwnership` message specifying the new owner.
     - The new owner is recorded in `pendingOwner`.
     - `proposeTime` is set to the current timestamp.
     - Emits an `OwnershipProposed` event.
   - The pending owner can claim ownership via ClaimOwnership.
     - Must wait until `proposeTime + timelockPeriod` has passed.
     - Emits an `OwnershipClaimed` event.
-  - The current owner (or guardians) can send RevokePendingOwnership to cancel the transfer.
+  - The current owner (or guardians) can send `RevokePendingOwnership` to cancel the transfer.
 - The `timelockPeriod` is set during contract deployment.
 
 # 📊 Get Methods
