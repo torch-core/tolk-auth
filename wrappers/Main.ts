@@ -282,8 +282,8 @@ export class Main implements Contract {
         return result.stack.readNumber();
     }
 
-    async getCheckPublicCapability(provider: ContractProvider, opcode: number) {
-        const result = await provider.get('checkPublicCapability', [
+    async getPublicCapability(provider: ContractProvider, opcode: number) {
+        const result = await provider.get('publicCapability', [
             {
                 type: 'int',
                 value: BigInt(opcode),
@@ -292,8 +292,8 @@ export class Main implements Contract {
         return result.stack.readBoolean();
     }
 
-    async getCheckRoleHasCapability(provider: ContractProvider, role: bigint, opcode: number) {
-        const result = await provider.get('checkRoleHasCapability', [
+    async getRoleHasCapability(provider: ContractProvider, role: bigint, opcode: number) {
+        const result = await provider.get('roleHasCapability', [
             {
                 type: 'int',
                 value: role,
@@ -306,8 +306,8 @@ export class Main implements Contract {
         return result.stack.readBoolean();
     }
 
-    async getCheckUserHasRole(provider: ContractProvider, user: Address, role: bigint) {
-        const result = await provider.get('checkUserHasRole', [
+    async getUserHasRole(provider: ContractProvider, user: Address, role: bigint) {
+        const result = await provider.get('userHasRole', [
             {
                 type: 'slice',
                 cell: beginCell().storeAddress(user).endCell(),

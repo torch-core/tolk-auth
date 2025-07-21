@@ -24,7 +24,7 @@ get fun ownerInfo(): OwnerInfo {
 /// Checks if an opcode has public capability.
 /// @param opcode The opcode to check.
 /// @return True if the opcode has public capability, false otherwise.
-get fun checkPublicCapability(opcode: Opcode): bool {
+get fun publicCapability(opcode: Opcode): bool {
     val storage = lazy Storage.load();
     val auth = lazy storage.auth.load();
     return auth.checkPublicCapability(opcode);
@@ -34,7 +34,7 @@ get fun checkPublicCapability(opcode: Opcode): bool {
 /// @param role The role ID to check.
 /// @param opcode The opcode to query.
 /// @return True if the role has the capability, false otherwise.
-get fun checkRoleHasCapability(role: RoleId, opcode: Opcode): bool {
+get fun roleHasCapability(role: RoleId, opcode: Opcode): bool {
     val storage = lazy Storage.load();
     val auth = lazy storage.auth.load();
     return auth.checkRoleHasCapability(role, opcode);
@@ -44,7 +44,7 @@ get fun checkRoleHasCapability(role: RoleId, opcode: Opcode): bool {
 /// @param user The address of the user to check.
 /// @param role The role ID to query.
 /// @return True if the user has the role, false otherwise.
-get fun checkUserHasRole(user: address, role: RoleId): bool {
+get fun userHasRole(user: address, role: RoleId): bool {
     val storage = lazy Storage.load();
     val auth = lazy storage.auth.load();
     return auth.checkUserHasRole(user, role);
