@@ -1,13 +1,13 @@
 tolk 1.0
 
 import "constants/error";
-import "messages";
+import "int-messages";
 import "storage";
 import "get-methods";
 import "role-authority/auth";
 import "role-authority/access";
-import "role-authority/messages";
-import "role-authority/log";
+import "role-authority/int-messages";
+import "role-authority/ext-messages";
 
 fun onInternalMessage(in: InMessage) {
     val msg = lazy AllowedMessage.fromSlice(in.body);

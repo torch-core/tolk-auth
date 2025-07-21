@@ -39,12 +39,19 @@ export const Roles = {
 };
 
 export const Opcodes = {
-    OP_INCREASE: 0x7e8764ef,
-    OP_RESET: 0x3a752f06,
-    OP_SET_USER_ROLE: 0xdd28b73e,
-    OP_SET_ROLE_CAPABILITY: 0xc6012bd0,
-    OP_SET_PUBLIC_CAPABILITY: 0x714a73bb,
-    OP_TRANSFER_OWNERSHIP: 0x7bb334c7,
+    INCREASE: 0x7e8764ef,
+    RESET: 0x3a752f06,
+    SET_USER_ROLE: 0xdd28b73e,
+    SET_ROLE_CAPABILITY: 0xc6012bd0,
+    SET_PUBLIC_CAPABILITY: 0x714a73bb,
+    TRANSFER_OWNERSHIP: 0x7bb334c7,
+};
+
+export const Topics = {
+    PUBLIC_CAPABILITY_UPDATED: BigInt(0xd213468c),
+    ROLE_CAPABILITY_UPDATED: BigInt(0x6aa264fa),
+    USER_ROLE_UPDATED: BigInt(0x31322498),
+    OWNERSHIP_TRANSFERRED: BigInt(0x45b9ecc7),
 };
 
 export const ErrorCodes = {
@@ -72,7 +79,7 @@ export class Main implements Contract {
             value: toNano('0.03'),
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: beginCell()
-                .storeUint(Opcodes.OP_SET_PUBLIC_CAPABILITY, OPCODE_SIZE)
+                .storeUint(Opcodes.SET_PUBLIC_CAPABILITY, OPCODE_SIZE)
                 .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
                 .storeUint(opcode, OPCODE_SIZE)
                 .storeBit(enabled)
@@ -85,7 +92,7 @@ export class Main implements Contract {
             value: toNano('0.03'),
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: beginCell()
-                .storeUint(Opcodes.OP_SET_ROLE_CAPABILITY, OPCODE_SIZE)
+                .storeUint(Opcodes.SET_ROLE_CAPABILITY, OPCODE_SIZE)
                 .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
                 .storeUint(role, ROLE_ID_SIZE)
                 .storeUint(opcode, OPCODE_SIZE)
@@ -99,7 +106,7 @@ export class Main implements Contract {
             value: toNano('0.03'),
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: beginCell()
-                .storeUint(Opcodes.OP_SET_USER_ROLE, OPCODE_SIZE)
+                .storeUint(Opcodes.SET_USER_ROLE, OPCODE_SIZE)
                 .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
                 .storeAddress(user)
                 .storeUint(role, ROLE_ID_SIZE)
@@ -129,7 +136,7 @@ export class Main implements Contract {
             value: opts.value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: beginCell()
-                .storeUint(Opcodes.OP_INCREASE, OPCODE_SIZE)
+                .storeUint(Opcodes.INCREASE, OPCODE_SIZE)
                 .storeUint(opts.queryID ?? 0, QUERY_ID_SIZE)
                 .storeUint(opts.increaseBy, COUNTER_SIZE)
                 .endCell(),
@@ -148,7 +155,7 @@ export class Main implements Contract {
             value: opts.value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: beginCell()
-                .storeUint(Opcodes.OP_RESET, OPCODE_SIZE)
+                .storeUint(Opcodes.RESET, OPCODE_SIZE)
                 .storeUint(opts.queryID ?? 0, QUERY_ID_SIZE)
                 .endCell(),
         });
@@ -191,7 +198,7 @@ export class Main implements Contract {
             value: toNano('0.1'),
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: beginCell()
-                .storeUint(Opcodes.OP_TRANSFER_OWNERSHIP, OPCODE_SIZE)
+                .storeUint(Opcodes.TRANSFER_OWNERSHIP, OPCODE_SIZE)
                 .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
                 .storeAddress(newOwner)
                 .endCell(),

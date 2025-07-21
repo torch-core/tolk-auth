@@ -1,8 +1,9 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Cell, toNano } from '@ton/core';
-import { Opcodes, Main, ErrorCodes, Roles } from '../wrappers/Main';
+import { Opcodes, Main, ErrorCodes, Roles, Topics } from '../wrappers/Main';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
+import { OPCODE_SIZE } from '../wrappers/constants/size';
 
 describe('Role Authority Test', () => {
     let code: Cell;
@@ -45,7 +46,7 @@ describe('Role Authority Test', () => {
     describe('Basic Role Authority tests', () => {
         it('should set public capability and unset public capability', async () => {
             // Set OP_INCREASE as public
-            const opcode = Opcodes.OP_INCREASE;
+            const opcode = Opcodes.INCREASE;
             const result = await main.sendSetPublicCapability(owner.getSender(), opcode, true);
 
             // Expect owner sends OP_SET_PUBLIC_CAPABILITY to main and success
@@ -53,7 +54,7 @@ describe('Role Authority Test', () => {
                 from: owner.address,
                 to: main.address,
                 success: true,
-                op: Opcodes.OP_SET_PUBLIC_CAPABILITY,
+                op: Opcodes.SET_PUBLIC_CAPABILITY,
             });
 
             // Get public capability
@@ -61,6 +62,14 @@ describe('Role Authority Test', () => {
 
             // Expect public capability to be true
             expect(publicCapability).toBe(true);
+
+            // Check emit public capability
+            expect(result.externals[0].info.dest?.value).toBe(Topics.PUBLIC_CAPABILITY_UPDATED);
+            const extBody = result.externals[0].body.beginParse();
+
+            expect(extBody.loadUintBig(OPCODE_SIZE)).toBe(Topics.PUBLIC_CAPABILITY_UPDATED);
+            expect(extBody.loadUint(OPCODE_SIZE)).toBe(Opcodes.INCREASE);
+            expect(extBody.loadBoolean()).toBe(true);
 
             // Unset public capability
             const result2 = await main.sendSetPublicCapability(owner.getSender(), opcode, false);
@@ -70,7 +79,7 @@ describe('Role Authority Test', () => {
                 from: owner.address,
                 to: main.address,
                 success: true,
-                op: Opcodes.OP_SET_PUBLIC_CAPABILITY,
+                op: Opcodes.SET_PUBLIC_CAPABILITY,
             });
 
             // Get public capability
@@ -78,10 +87,18 @@ describe('Role Authority Test', () => {
 
             // Expect public capability to be false
             expect(publicCapability2).toBe(false);
+
+            // Check emit public capability
+            expect(result2.externals[0].info.dest?.value).toBe(Topics.PUBLIC_CAPABILITY_UPDATED);
+            const extBody2 = result2.externals[0].body.beginParse();
+
+            expect(extBody2.loadUintBig(OPCODE_SIZE)).toBe(Topics.PUBLIC_CAPABILITY_UPDATED);
+            expect(extBody2.loadUint(OPCODE_SIZE)).toBe(Opcodes.INCREASE);
+            expect(extBody2.loadBoolean()).toBe(false);
         });
         it('should set role capability and unset role capability', async () => {
             // Set RESET_ROLE to have OP_RESET capability
-            const opcode = Opcodes.OP_RESET;
+            const opcode = Opcodes.RESET;
             const result = await main.sendSetRoleCapability(owner.getSender(), Roles.RESET, opcode, true);
 
             // Expect owner sends OP_SET_ROLE_CAPABILITY to main and success
@@ -89,7 +106,7 @@ describe('Role Authority Test', () => {
                 from: owner.address,
                 to: main.address,
                 success: true,
-                op: Opcodes.OP_SET_ROLE_CAPABILITY,
+                op: Opcodes.SET_ROLE_CAPABILITY,
             });
 
             // Get role capability
@@ -110,7 +127,7 @@ describe('Role Authority Test', () => {
                 from: owner.address,
                 to: main.address,
                 success: true,
-                op: Opcodes.OP_SET_ROLE_CAPABILITY,
+                op: Opcodes.SET_ROLE_CAPABILITY,
             });
 
             // Get role capability
@@ -132,7 +149,7 @@ describe('Role Authority Test', () => {
                 from: owner.address,
                 to: main.address,
                 success: true,
-                op: Opcodes.OP_SET_USER_ROLE,
+                op: Opcodes.SET_USER_ROLE,
             });
 
             // Get maxey role
@@ -153,7 +170,7 @@ describe('Role Authority Test', () => {
                 from: owner.address,
                 to: main.address,
                 success: true,
-                op: Opcodes.OP_SET_USER_ROLE,
+                op: Opcodes.SET_USER_ROLE,
             });
 
             // Get maxey role
@@ -178,7 +195,7 @@ describe('Role Authority Test', () => {
                 from: owner.address,
                 to: main.address,
                 success: true,
-                op: Opcodes.OP_TRANSFER_OWNERSHIP,
+                op: Opcodes.TRANSFER_OWNERSHIP,
             });
 
             // Get current owner
@@ -192,7 +209,7 @@ describe('Role Authority Test', () => {
     describe('Public Capability tests', () => {
         it('should increase counter after setting public capability', async () => {
             // Set increase opcode as public
-            await main.sendSetPublicCapability(owner.getSender(), Opcodes.OP_INCREASE, true);
+            await main.sendSetPublicCapability(owner.getSender(), Opcodes.INCREASE, true);
 
             // Get counter before
             const counterBefore = await main.getCounter();
@@ -208,7 +225,7 @@ describe('Role Authority Test', () => {
                 from: maxey.address,
                 to: main.address,
                 success: true,
-                op: Opcodes.OP_INCREASE,
+                op: Opcodes.INCREASE,
             });
 
             // Get counter after
@@ -230,7 +247,7 @@ describe('Role Authority Test', () => {
                 from: maxey.address,
                 to: main.address,
                 success: false,
-                op: Opcodes.OP_INCREASE,
+                op: Opcodes.INCREASE,
                 exitCode: ErrorCodes.NOT_AUTHORIZED,
             });
         });
@@ -251,7 +268,7 @@ describe('Role Authority Test', () => {
             expect(counterBefore).toBe(1);
 
             // Set reset opcode as public
-            await main.sendSetRoleCapability(owner.getSender(), Roles.RESET, Opcodes.OP_RESET, true);
+            await main.sendSetRoleCapability(owner.getSender(), Roles.RESET, Opcodes.RESET, true);
 
             // Set maxey to have RESET_ROLE
             await main.sendSetUserRole(owner.getSender(), maxey.address, Roles.RESET, true);
@@ -266,7 +283,7 @@ describe('Role Authority Test', () => {
                 from: maxey.address,
                 to: main.address,
                 success: true,
-                op: Opcodes.OP_RESET,
+                op: Opcodes.RESET,
             });
 
             // Get counter after reset
@@ -286,7 +303,7 @@ describe('Role Authority Test', () => {
                 from: maxey.address,
                 to: main.address,
                 success: false,
-                op: Opcodes.OP_RESET,
+                op: Opcodes.RESET,
                 exitCode: ErrorCodes.NOT_AUTHORIZED,
             });
         });
@@ -345,7 +362,7 @@ describe('Role Authority Test', () => {
                 from: maxey.address,
                 to: main.address,
                 success: false,
-                op: Opcodes.OP_TRANSFER_OWNERSHIP,
+                op: Opcodes.TRANSFER_OWNERSHIP,
                 exitCode: ErrorCodes.NOT_AUTHORIZED,
             });
         });
@@ -358,7 +375,7 @@ describe('Role Authority Test', () => {
         };
 
         it('should correctly manage multiple roles for OP_RESET capability', async () => {
-            const opcode = Opcodes.OP_RESET;
+            const opcode = Opcodes.RESET;
             const testRoles = [0n, 1n, 2n, 4n, 7n]; // Test various roles including edge cases
             let expectedMask = 0n;
 
@@ -426,7 +443,7 @@ describe('Role Authority Test', () => {
         });
 
         it('should handle all 256 roles edge case testing', async () => {
-            const opcode = Opcodes.OP_INCREASE;
+            const opcode = Opcodes.INCREASE;
 
             // Add all 256 roles (0-255)
             for (let role = 0n; role < 256n; role++) {
@@ -472,7 +489,7 @@ describe('Role Authority Test', () => {
         });
 
         it('should handle random fuzzing operations', async () => {
-            const opcodes = [Opcodes.OP_INCREASE, Opcodes.OP_RESET];
+            const opcodes = [Opcodes.INCREASE, Opcodes.RESET];
             const users = [
                 maxey.address,
                 (await blockchain.treasury('user2')).address,
@@ -536,7 +553,7 @@ describe('Role Authority Test', () => {
         });
 
         it('should reject invalid role 256 (out of bounds)', async () => {
-            const opcode = Opcodes.OP_INCREASE;
+            const opcode = Opcodes.INCREASE;
             const invalidRole = 256n; // Should be out of bounds for 256-bit mask (valid range: 0-255)
 
             // Attempt to set role capability for invalid role 256

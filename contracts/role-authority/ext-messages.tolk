@@ -1,5 +1,31 @@
 import "constants/type";
-import "messages";
+
+struct(0xd213468c) PublicCapabilityUpdated {
+    opcode: Opcode
+    enabled: bool
+}
+
+struct(0x6aa264fa) RoleCapabilityUpdated {
+    opcode: Opcode
+    role: RoleId
+    enabled: bool
+}
+
+struct(0x31322498) UserRoleUpdated {
+    user: address
+    role: RoleId
+    enabled: bool
+}
+
+struct(0x45b9ecc7) OwnershipTransferred {
+    sender: address
+    newOwner: address
+}
+
+const TOPIC_PUBLIC_CAPABILITY_UPDATED = PublicCapabilityUpdated.getDeclaredPackPrefix();
+const TOPIC_ROLE_CAPABILITY_UPDATED = RoleCapabilityUpdated.getDeclaredPackPrefix();
+const TOPIC_USER_ROLE_UPDATED = UserRoleUpdated.getDeclaredPackPrefix();
+const TOPIC_OWNERSHIP_TRANSFERRED = OwnershipTransferred.getDeclaredPackPrefix();
 
 fun emitPublicCapabilityUpdated(opcode: Opcode, enabled: bool) {
     val emitMsg = createExternalLogMessage({

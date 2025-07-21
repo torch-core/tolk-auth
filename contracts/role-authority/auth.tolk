@@ -1,8 +1,7 @@
 import "@stdlib/tvm-dicts";
 import "constants/size";
 import "constants/type";
-import "messages";
-import "log";
+import "ext-messages";
 
 struct Auth {
     owner: address
