@@ -7,11 +7,12 @@ tolk 1.0
 import "constants/error";
 import "int-messages";
 import "storage";
+import "get-methods";
 import "role-authority/auth";
 import "role-authority/access";
 import "role-authority/int-messages";
 import "role-authority/ext-messages";
-import "get-methods"; // Enables off-chain access to get methods. Removing this will disable them.
+import "role-authority/get-methods"; // Enables off-chain access to get methods. Removing this will disable them.
 
 fun onInternalMessage(in: InMessage) {
     val msg = lazy AllowedMessage.fromSlice(in.body);
@@ -78,3 +79,4 @@ fun onInternalMessage(in: InMessage) {
         }
     }
 }
+
