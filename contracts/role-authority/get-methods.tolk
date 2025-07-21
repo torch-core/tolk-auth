@@ -2,6 +2,12 @@ import "../storage";
 import "constants/type";
 import "auth";
 
+/// @title Optional Get Methods for Role Authority
+/// @notice View functions for reading role and ownership data from the authority system.
+/// @dev These methods are provided as reference implementations only. You can remove or modify them as needed:
+/// - Your contract may use a different storage struct name (e.g., `JettonStorage` instead of `Storage`).
+/// - Alternatively, you can read contract state off-chain and manually decode fields like `ownerInfo` or permission dicts.
+
 /// Returns detailed information about the ownership status of the authority system.
 /// @notice Provides the current owner, pending owner (if any), propose time, and timelock duration.
 /// @return The OwnershipInfo structure containing:
