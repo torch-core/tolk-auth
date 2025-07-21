@@ -20,7 +20,9 @@ struct(0x31322498) UserRoleUpdated {
 
 struct(0x261921b7) OwnershipProposed {
     currentOwner: address
-    newOwner: address
+    pendingOwner: address
+    proposeTime: Timestamp
+    timelockPeriod: Timestamp
 }
 
 struct(0x5aab7991) OwnershipClaimed {
@@ -77,12 +79,14 @@ fun emitUserRoleUpdated(user: address, role: RoleId, enabled: bool) {
     emitMsg.send(SEND_MODE_REGULAR);
 }
 
-fun emitOwnershipProposed(sender: address, newOwner: address) {
+fun emitOwnershipProposed(currentOwner: address, pendingOwner: address, proposeTime: Timestamp, timelockPeriod: Timestamp) {
     val emitMsg = createExternalLogMessage({
         dest: ExtOutLogBucket {topic: TOPIC_OWNERSHIP_PROPOSED},
         body: OwnershipProposed {
-            currentOwner: sender,
-            newOwner: newOwner,
+            currentOwner: currentOwner,
+            pendingOwner: pendingOwner,
+            proposeTime: proposeTime,
+            timelockPeriod: timelockPeriod,
         }
     });
     emitMsg.send(SEND_MODE_REGULAR);

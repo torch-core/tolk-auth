@@ -10,7 +10,15 @@ import {
     SendMode,
     toNano,
 } from '@ton/core';
-import { COUNTER_SIZE, ID_SIZE, OPCODE_SIZE, QUERY_ID_SIZE, ROLE_ID_SIZE, ROLE_MASK_SIZE, TIMESTAMP_SIZE } from './constants/size';
+import {
+    COUNTER_SIZE,
+    ID_SIZE,
+    OPCODE_SIZE,
+    QUERY_ID_SIZE,
+    ROLE_ID_SIZE,
+    ROLE_MASK_SIZE,
+    TIMESTAMP_SIZE,
+} from './constants/size';
 
 export type MainConfig = {
     id: number;
@@ -37,13 +45,21 @@ export function mainConfigToCell(config: MainConfig): Cell {
         .endCell();
 }
 
-export type MainStorage = {
+export interface OwnerInfo {
+    owner: Address;
+    pendingOwner: Address | null;
+    proposeTime: number;
+    timelockPeriod: number;
+}
+
+export interface MainStorage {
     id: number;
     counter: number;
-    owner: Address;
+    ownerInfo: OwnerInfo;
+    isCapabilityPublic: Dictionary<number, boolean>;
+    rolesWithCapability: Dictionary<number, bigint>;
     userRoles: Dictionary<Address, bigint>;
-    rolesWithCapability: Dictionary<bigint, bigint>;
-};
+}
 
 export const Roles = {
     RESET: 0n,
@@ -55,14 +71,18 @@ export const Opcodes = {
     SET_USER_ROLE: 0xdd28b73e,
     SET_ROLE_CAPABILITY: 0xc6012bd0,
     SET_PUBLIC_CAPABILITY: 0x714a73bb,
-    TRANSFER_OWNERSHIP: 0x7bb334c7,
+    PROPOSE_OWNERSHIP: 0x9c25dd71,
+    CLAIM_OWNERSHIP: 0xb835b5cb,
+    REVOKE_PENDING_OWNERSHIP: 0x3d89e313,
 };
 
 export const Topics = {
     PUBLIC_CAPABILITY_UPDATED: BigInt(0xd213468c),
     ROLE_CAPABILITY_UPDATED: BigInt(0x6aa264fa),
     USER_ROLE_UPDATED: BigInt(0x31322498),
-    OWNERSHIP_TRANSFERRED: BigInt(0x45b9ecc7),
+    OWNERSHIP_PROPOSED: BigInt(0x261921b7),
+    OWNERSHIP_CLAIMED: BigInt(0x5aab7991),
+    OWNERSHIP_REVOKED: BigInt(0x4f2bd7df),
 };
 
 export const ErrorCodes = {
@@ -122,6 +142,40 @@ export class Main implements Contract {
                 .storeAddress(user)
                 .storeUint(role, ROLE_ID_SIZE)
                 .storeBit(enabled)
+                .endCell(),
+        };
+    }
+
+    static createProposeOwnershipArg(newOwner: Address, queryID?: bigint) {
+        return {
+            value: toNano('0.03'),
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(Opcodes.PROPOSE_OWNERSHIP, OPCODE_SIZE)
+                .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
+                .storeAddress(newOwner)
+                .endCell(),
+        };
+    }
+
+    static createClaimOwnershipArg(queryID?: bigint) {
+        return {
+            value: toNano('0.03'),
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(Opcodes.CLAIM_OWNERSHIP, OPCODE_SIZE)
+                .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
+                .endCell(),
+        };
+    }
+
+    static createRevokePendingOwnershipArg(queryID?: bigint) {
+        return {
+            value: toNano('0.03'),
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(Opcodes.REVOKE_PENDING_OWNERSHIP, OPCODE_SIZE)
+                .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
                 .endCell(),
         };
     }
@@ -204,16 +258,16 @@ export class Main implements Contract {
         await provider.internal(via, Main.createSetUserRoleArg(user, role, enabled, queryID));
     }
 
-    async sendTransferOwnerShip(provider: ContractProvider, via: Sender, newOwner: Address, queryID?: bigint) {
-        await provider.internal(via, {
-            value: toNano('0.1'),
-            sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell()
-                .storeUint(Opcodes.TRANSFER_OWNERSHIP, OPCODE_SIZE)
-                .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
-                .storeAddress(newOwner)
-                .endCell(),
-        });
+    async sendProposeOwnership(provider: ContractProvider, via: Sender, newOwner: Address, queryID?: bigint) {
+        await provider.internal(via, Main.createProposeOwnershipArg(newOwner, queryID));
+    }
+
+    async sendClaimOwnership(provider: ContractProvider, via: Sender, queryID?: bigint) {
+        await provider.internal(via, Main.createClaimOwnershipArg(queryID));
+    }
+
+    async sendRevokePendingOwnership(provider: ContractProvider, via: Sender, queryID?: bigint) {
+        await provider.internal(via, Main.createRevokePendingOwnershipArg(queryID));
     }
 
     async getCounter(provider: ContractProvider) {
@@ -264,12 +318,16 @@ export class Main implements Contract {
         return result.stack.readBoolean();
     }
 
-    async getOwner(provider: ContractProvider) {
-        const result = await provider.get('owner', []);
-        return result.stack.readAddress();
+    async getOwnerInfo(provider: ContractProvider): Promise<OwnerInfo> {
+        const result = await provider.get('ownerInfo', []);
+        const owner = result.stack.readAddress();
+        const pendingOwner = result.stack.readAddressOpt();
+        const timelockPeriod = result.stack.readNumber();
+        const proposeTime = result.stack.readNumber();
+        return { owner, pendingOwner, proposeTime, timelockPeriod };
     }
 
-    async getStorage(provider: ContractProvider) {
+    async getStorage(provider: ContractProvider): Promise<MainStorage> {
         const { state } = await provider.getState();
         if (state.type !== 'active' || !state.code || !state.data) {
             throw new Error('tgUSDEngine is not active');
@@ -283,6 +341,10 @@ export class Main implements Contract {
         const counter = storageSlice.loadUint(COUNTER_SIZE);
         const authSlice = storageSlice.loadRef().beginParse();
         const owner = authSlice.loadAddress();
+        const pendingOwner = authSlice.loadMaybeAddress();
+        const timelockPeriod = authSlice.loadUint(TIMESTAMP_SIZE);
+        const proposeTime = authSlice.loadUint(TIMESTAMP_SIZE);
+        const ownerInfo: OwnerInfo = { owner, pendingOwner, proposeTime, timelockPeriod };
         const isCapabilityPublic = authSlice.loadDict(Dictionary.Keys.Uint(OPCODE_SIZE), Dictionary.Values.Bool());
         const rolesWithCapability = authSlice.loadDict(
             Dictionary.Keys.Uint(OPCODE_SIZE),
@@ -290,6 +352,6 @@ export class Main implements Contract {
         );
         const userRoles = authSlice.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(ROLE_MASK_SIZE));
 
-        return { id, counter, owner, userRoles, rolesWithCapability, isCapabilityPublic };
+        return { id, counter, ownerInfo, isCapabilityPublic, rolesWithCapability, userRoles };
     }
 }

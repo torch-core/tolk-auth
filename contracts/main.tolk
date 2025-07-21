@@ -47,7 +47,7 @@ fun onInternalMessage(in: InMessage) {
             auth.requireAuth(in.senderAddress, OP_PROPOSE_OWNERSHIP);
             auth.ownerInfo.pendingOwner = msg.newOwner;
             auth.ownerInfo.proposeTime = blockchain.now();
-            emitOwnershipProposed(in.senderAddress, msg.newOwner);
+            emitOwnershipProposed(in.senderAddress, msg.newOwner, auth.ownerInfo.proposeTime, auth.ownerInfo.timelockPeriod);
             storage.auth = auth.toCell();
             storage.save();
         }
@@ -64,6 +64,7 @@ fun onInternalMessage(in: InMessage) {
             auth.requireAuth(in.senderAddress, OP_REVOKE_PENDING_OWNERSHIP);
             emitOwnershipRevoked(in.senderAddress, auth.ownerInfo.pendingOwner);
             auth.ownerInfo.pendingOwner = createAddressNone();
+            auth.ownerInfo.proposeTime = 0;
             storage.auth = auth.toCell();
             storage.save();
         }

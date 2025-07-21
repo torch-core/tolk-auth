@@ -4,7 +4,9 @@ import { Opcodes, Main, ErrorCodes, Roles } from '../wrappers/Main';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
 import {
-    expectOwnershipTransferredEmitLog,
+    expectOwnershipClaimedEmitLog,
+    expectOwnershipProposedEmitLog,
+    expectOwnershipRevokedEmitLog,
     expectPublicCapabilityEmitLog,
     expectRoleCapabilityEmitLog,
     expectUserRoleEmitLog,
@@ -12,20 +14,26 @@ import {
 
 describe('Role Authority Test', () => {
     let code: Cell;
+    let now: number;
+    const timelockPeriod = 60 * 60 * 12; // 12 hours
 
     beforeAll(async () => {
         code = await compile('Main');
+        now = Math.floor(Date.now() / 1000);
     });
 
     let blockchain: Blockchain;
     let owner: SandboxContract<TreasuryContract>;
     let maxey: SandboxContract<TreasuryContract>;
+    let newOwner: SandboxContract<TreasuryContract>;
     let main: SandboxContract<Main>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
+        blockchain.now = now;
         owner = await blockchain.treasury('owner');
         maxey = await blockchain.treasury('maxey');
+        newOwner = await blockchain.treasury('newOwner');
 
         main = blockchain.openContract(
             Main.createFromConfig(
@@ -33,6 +41,7 @@ describe('Role Authority Test', () => {
                     id: 0,
                     counter: 0,
                     owner: owner.address,
+                    timelockPeriod,
                 },
                 code,
             ),
@@ -190,29 +199,89 @@ describe('Role Authority Test', () => {
             // Check emit user role
             expectUserRoleEmitLog(result2, maxey.address, Roles.RESET, false);
         });
-        it('should transfer ownership', async () => {
-            // Create new owner
-            const newOwner = await blockchain.treasury('newOwner');
-
-            // Transfer ownership to new owner
-            const result = await main.sendTransferOwnerShip(owner.getSender(), newOwner.address);
+        it('should propose ownership and claim ownership', async () => {
+            // Propose ownership to new owner
+            const proposeResult = await main.sendProposeOwnership(owner.getSender(), newOwner.address);
 
             // Expect owner sends OP_TRANSFER_OWNERSHIP to main and success
-            expect(result.transactions).toHaveTransaction({
+            expect(proposeResult.transactions).toHaveTransaction({
                 from: owner.address,
                 to: main.address,
                 success: true,
-                op: Opcodes.TRANSFER_OWNERSHIP,
+                op: Opcodes.PROPOSE_OWNERSHIP,
             });
 
             // Get current owner
-            const currentOwner = await main.getOwner();
+            const currentOwner = await main.getOwnerInfo();
+
+            // Expect current owner to be owner
+            expect(currentOwner.owner.equals(owner.address)).toBeTruthy();
+
+            // Expect pending owner to be new owner
+            expect(currentOwner.pendingOwner?.equals(newOwner.address)).toBeTruthy();
+
+            // Expect propose time to be now
+            expect(currentOwner.proposeTime).toBe(now);
+
+            // Check emit ownership proposed
+            expectOwnershipProposedEmitLog(proposeResult, owner.address, newOwner.address, now, timelockPeriod);
+
+            // Wait for timelock period
+            blockchain.now = now + timelockPeriod + 1;
+
+            // Claim ownership
+            const claimResult = await main.sendClaimOwnership(newOwner.getSender());
+
+            // Expect new owner sends OP_CLAIM_OWNERSHIP to main and success
+            expect(claimResult.transactions).toHaveTransaction({
+                from: newOwner.address,
+                to: main.address,
+                success: true,
+                op: Opcodes.CLAIM_OWNERSHIP,
+            });
+
+            // Get current owner
+            const currentOwnerAfterClaim = await main.getOwnerInfo();
 
             // Expect current owner to be new owner
-            expect(currentOwner.equals(newOwner.address)).toBeTruthy();
+            expect(currentOwnerAfterClaim.owner.equals(newOwner.address)).toBeTruthy();
 
-            // Check emit ownership transferred
-            expectOwnershipTransferredEmitLog(result, owner.address, newOwner.address);
+            // Expect pending owner to be zero address
+            expect(currentOwnerAfterClaim.pendingOwner == null).toBeTruthy();
+
+            // Check emit ownership claimed
+            expectOwnershipClaimedEmitLog(claimResult, newOwner.address);
+        });
+
+        it('should revoke pending ownership', async () => {
+            // Propose ownership to new owner
+            await main.sendProposeOwnership(owner.getSender(), newOwner.address);
+
+            // Revoke pending ownership
+            const revokeResult = await main.sendRevokePendingOwnership(owner.getSender());
+
+            // Expect owner sends OP_REVOKE_PENDING_OWNERSHIP to main and success
+            expect(revokeResult.transactions).toHaveTransaction({
+                from: owner.address,
+                to: main.address,
+                success: true,
+                op: Opcodes.REVOKE_PENDING_OWNERSHIP,
+            });
+
+            // Get current owner
+            const currentOwner = await main.getOwnerInfo();
+
+            // Expect current owner to be owner
+            expect(currentOwner.owner.equals(owner.address)).toBeTruthy();
+
+            // Expect pending owner to be zero address
+            expect(currentOwner.pendingOwner == null).toBeTruthy();
+
+            // Expect propose time to be 0
+            expect(currentOwner.proposeTime).toBe(0);
+
+            // Check emit ownership revoked
+            expectOwnershipRevokedEmitLog(revokeResult, owner.address, newOwner.address);
         });
     });
 
@@ -362,20 +431,20 @@ describe('Role Authority Test', () => {
             expect(await main.getCounter()).toBe(0);
         });
 
-        it('should only owner can transfer ownership', async () => {
-            // maxey try to transfer ownership to new owner
-            const newOwner = await blockchain.treasury('newOwner');
-            const result = await main.sendTransferOwnerShip(maxey.getSender(), newOwner.address);
+        // it('should only owner can transfer ownership', async () => {
+        //     // maxey try to transfer ownership to new owner
+        //     const newOwner = await blockchain.treasury('newOwner');
+        //     const result = await main.sendTransferOwnerShip(maxey.getSender(), newOwner.address);
 
-            // Expect maxey sends OP_TRANSFER_OWNERSHIP to main and exit with NOT_AUTHORIZED
-            expect(result.transactions).toHaveTransaction({
-                from: maxey.address,
-                to: main.address,
-                success: false,
-                op: Opcodes.TRANSFER_OWNERSHIP,
-                exitCode: ErrorCodes.NOT_AUTHORIZED,
-            });
-        });
+        //     // Expect maxey sends OP_TRANSFER_OWNERSHIP to main and exit with NOT_AUTHORIZED
+        //     expect(result.transactions).toHaveTransaction({
+        //         from: maxey.address,
+        //         to: main.address,
+        //         success: false,
+        //         op: Opcodes.TRANSFER_OWNERSHIP,
+        //         exitCode: ErrorCodes.NOT_AUTHORIZED,
+        //     });
+        // });
     });
 
     describe('Complex bit mask verification tests', () => {
