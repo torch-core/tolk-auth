@@ -132,7 +132,7 @@ Events are emitted for tracking: `RoleCapabilityUpdated` for opcode permissions 
 
 Ownership transfer is implemented as a two-stage process with a timelock for security.
 
-- Process:
+**Process**:
   - The current owner sends a `ProposeOwnership` message specifying the new owner.
     - The new owner is recorded in `pendingOwner`.
     - `proposeTime` is set to the current timestamp.
@@ -141,7 +141,8 @@ Ownership transfer is implemented as a two-stage process with a timelock for sec
     - Must wait until `proposeTime + timelockPeriod` has passed.
     - Emits an `OwnershipClaimed` event.
   - The current owner (or guardians) can send `RevokePendingOwnership` to cancel the transfer.
-- The `timelockPeriod` is set during contract deployment.
+
+The `timelockPeriod` is set during contract deployment.
 
 # 📊 Get Methods
 
