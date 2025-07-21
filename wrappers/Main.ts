@@ -282,8 +282,8 @@ export class Main implements Contract {
         return result.stack.readNumber();
     }
 
-    async getHasPublicCapability(provider: ContractProvider, opcode: number) {
-        const result = await provider.get('hasPublicCapability', [
+    async getCheckPublicCapability(provider: ContractProvider, opcode: number) {
+        const result = await provider.get('checkPublicCapability', [
             {
                 type: 'int',
                 value: BigInt(opcode),
@@ -292,7 +292,7 @@ export class Main implements Contract {
         return result.stack.readBoolean();
     }
 
-    async getcheckRoleHasCapability(provider: ContractProvider, role: bigint, opcode: number) {
+    async getCheckRoleHasCapability(provider: ContractProvider, role: bigint, opcode: number) {
         const result = await provider.get('checkRoleHasCapability', [
             {
                 type: 'int',

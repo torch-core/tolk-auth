@@ -7,7 +7,7 @@ import "constants/error";
 /// @param opcode The opcode to check.
 /// @return True if the opcode has public capability, false otherwise.
 @pure
-fun Auth.hasPublicCapability(self, opcode: Opcode): bool {
+fun Auth.checkPublicCapability(self, opcode: Opcode): bool {
     return self.getPublicCapability(opcode);
 }
 

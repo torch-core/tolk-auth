@@ -24,10 +24,10 @@ get fun ownerInfo(): OwnerInfo {
 /// Checks if an opcode has public capability.
 /// @param opcode The opcode to check.
 /// @return True if the opcode has public capability, false otherwise.
-get fun hasPublicCapability(opcode: Opcode): bool {
+get fun checkPublicCapability(opcode: Opcode): bool {
     val storage = lazy Storage.load();
     val auth = lazy storage.auth.load();
-    return auth.hasPublicCapability(opcode);
+    return auth.checkPublicCapability(opcode);
 }
 
 /// Checks if a role has capability for a specific opcode.

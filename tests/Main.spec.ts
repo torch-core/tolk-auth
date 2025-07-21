@@ -72,7 +72,7 @@ describe('Role Authority Test', () => {
             });
 
             // Get public capability
-            const publicCapability = await main.getHasPublicCapability(opcode);
+            const publicCapability = await main.getCheckPublicCapability(opcode);
 
             // Expect public capability to be true
             expect(publicCapability).toBe(true);
@@ -92,7 +92,7 @@ describe('Role Authority Test', () => {
             });
 
             // Get public capability
-            const publicCapability2 = await main.getHasPublicCapability(opcode);
+            const publicCapability2 = await main.getCheckPublicCapability(opcode);
 
             // Expect public capability to be false
             expect(publicCapability2).toBe(false);
@@ -114,7 +114,7 @@ describe('Role Authority Test', () => {
             });
 
             // Get role capability
-            const roleCapability = await main.getcheckRoleHasCapability(Roles.RESET, opcode);
+            const roleCapability = await main.getCheckRoleHasCapability(Roles.RESET, opcode);
 
             // Expect role capability to be true
             expect(roleCapability).toBe(true);
@@ -138,7 +138,7 @@ describe('Role Authority Test', () => {
             });
 
             // Get role capability
-            const roleCapability2 = await main.getcheckRoleHasCapability(Roles.RESET, opcode);
+            const roleCapability2 = await main.getCheckRoleHasCapability(Roles.RESET, opcode);
 
             // Expect role capability to be false
             expect(roleCapability2).toBe(false);
@@ -509,7 +509,7 @@ describe('Role Authority Test', () => {
                 const actualMask = storage.rolesWithCapability.get(opcode) || 0;
 
                 expect(actualMask).toBe(expectedMask);
-                expect(await main.getcheckRoleHasCapability(role, opcode)).toBe(true);
+                expect(await main.getCheckRoleHasCapability(role, opcode)).toBe(true);
             }
 
             // Verify all roles are set correctly
@@ -525,7 +525,7 @@ describe('Role Authority Test', () => {
                 const actualMask = storage.rolesWithCapability.get(opcode);
 
                 expect(actualMask).toBe(expectedMask);
-                expect(await main.getcheckRoleHasCapability(role, opcode)).toBe(false);
+                expect(await main.getCheckRoleHasCapability(role, opcode)).toBe(false);
             }
 
             // Final mask should be 0
@@ -579,7 +579,7 @@ describe('Role Authority Test', () => {
             // Verify some sample roles
             const sampleRoles = [0n, 1n, 127n, 128n, 254n, 255n];
             for (const role of sampleRoles) {
-                expect(await main.getcheckRoleHasCapability(role, opcode)).toBe(true);
+                expect(await main.getCheckRoleHasCapability(role, opcode)).toBe(true);
             }
 
             // Remove even numbered roles (0, 2, 4, 6, ..., 254)
@@ -599,13 +599,13 @@ describe('Role Authority Test', () => {
             // Verify remaining odd roles
             const sampleOddRoles = [1n, 3n, 5n, 127n, 129n, 255n];
             for (const role of sampleOddRoles) {
-                expect(await main.getcheckRoleHasCapability(role, opcode)).toBe(true);
+                expect(await main.getCheckRoleHasCapability(role, opcode)).toBe(true);
             }
 
             // Verify removed even roles
             const sampleEvenRoles = [0n, 2n, 4n, 126n, 128n, 254n];
             for (const role of sampleEvenRoles) {
-                expect(await main.getcheckRoleHasCapability(role, opcode)).toBe(false);
+                expect(await main.getCheckRoleHasCapability(role, opcode)).toBe(false);
             }
         });
 
