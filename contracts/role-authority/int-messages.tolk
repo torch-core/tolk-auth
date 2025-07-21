@@ -3,21 +3,21 @@ import "constants/type";
 /* Auth internal messages structs */
 struct (0x714a73bb) SetPublicCapability {
     queryId: QueryID
-    opcode: uint32
+    opcode: Opcode
     enabled: bool
 }
 
 struct (0xc6012bd0) SetRoleCapability {
     queryId: QueryID
-    role: uint8
-    opcode: uint32
+    role: RoleId
+    opcode: Opcode
     enabled: bool
 }
 
 struct (0xdd28b73e) SetUserRole {
     queryId: QueryID
     user: address
-    role: uint8
+    role: RoleId
     enabled: bool
 }
 
