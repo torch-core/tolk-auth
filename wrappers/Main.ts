@@ -127,8 +127,8 @@ export class Main implements Contract {
             body: beginCell()
                 .storeUint(Opcodes.SET_ROLE_CAPABILITY, OPCODE_SIZE)
                 .storeUint(queryID ?? 0n, QUERY_ID_SIZE)
-                .storeUint(role, ROLE_ID_SIZE)
                 .storeUint(opcode, OPCODE_SIZE)
+                .storeUint(role, ROLE_ID_SIZE)
                 .storeBit(enabled)
                 .endCell(),
         };

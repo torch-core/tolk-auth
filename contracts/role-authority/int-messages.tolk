@@ -9,15 +9,15 @@ struct (0x714a73bb) SetPublicCapability {
 
 struct (0xc6012bd0) SetRoleCapability {
     queryId: QueryID
-    role: RoleId
-    opcode: Opcode
+    opcode: Opcode      // Target opcode to set the capability for
+    role: RoleId        // Set this role to have the capability for the opcode
     enabled: bool
 }
 
 struct (0xdd28b73e) SetUserRole {
     queryId: QueryID
-    user: address
-    role: RoleId
+    user: address       // Target user to set the role for
+    role: RoleId        // Grant this role to the user
     enabled: bool
 }
 
