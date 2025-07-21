@@ -20,6 +20,7 @@ struct Auth {
 /// @param self The Auth structure instance.
 /// @param opcode The opcode to check.
 /// @return True if the opcode has public capability, false otherwise.
+@pure
 fun Auth.getPublicCapability(self, opcode: Opcode): bool {
     var (publicCapability, found) = self.isCapabilityPublic.uDictGet(OPCODE_SIZE, opcode);
     return found ? publicCapability!.loadBool() : false;
@@ -29,6 +30,7 @@ fun Auth.getPublicCapability(self, opcode: Opcode): bool {
 /// @param self The Auth structure instance.
 /// @param opcode The opcode to check.
 /// @return The role mask for the opcode (0 if not found).
+@pure
 fun Auth.getRoleCapability(self, opcode: Opcode): RoleMask {
     var (roleCapability, found) = self.rolesWithCapability.uDictGet(OPCODE_SIZE, opcode);    
     return (found ? roleCapability!.loadUint(ROLE_MASK_SIZE) : 0) as RoleMask;
@@ -38,6 +40,7 @@ fun Auth.getRoleCapability(self, opcode: Opcode): RoleMask {
 /// @param self The Auth structure instance.
 /// @param user The address of the user to check.
 /// @return The role mask for the user (0 if not found).
+@pure
 fun Auth.getUserRoles(self, user: address): RoleMask {
     val userSlice = user as slice;
     var (userRoleCell, found) = self.userRoles.sDictGet(ADDRESS_SIZE, userSlice);
