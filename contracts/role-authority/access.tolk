@@ -28,7 +28,7 @@ fun Auth.hasCapability(self, role: RoleId, opcode: Opcode): bool {
 
 /// Checks if an opcode has public capability.
 /// @param self The Auth structure instance.
-/// @param opcode The opcode to query.
+/// @param opcode The opcode to check.
 /// @return True if the opcode has public capability, false otherwise.
 @pure
 fun Auth.hasPublicCapability(self, opcode: Opcode): bool {
@@ -38,8 +38,8 @@ fun Auth.hasPublicCapability(self, opcode: Opcode): bool {
 
 /// Determines if a user can call a specific opcode based on roles or public capability.
 /// @param self The Auth structure instance.
-/// @param user The address of the user.
-/// @param opcode The opcode to check.
+/// @param user The address of the user to check.
+/// @param opcode The opcode to query.
 /// @return True if the user can call the opcode, false otherwise.
 /// @dev Returns true if the opcode is marked public, or if the user's RoleMask intersects
 ///      with the opcode's RoleMask (i.e., (userRoles & roleCapability) != 0).
@@ -54,8 +54,8 @@ fun Auth.canCall(self, user: address, opcode: Opcode): bool {
 
 /// Checks if a user is authorized for an opcode, including owner fallback.
 /// @param self The Auth structure instance.
-/// @param user The address of the user.
-/// @param opcode The opcode to check.
+/// @param user The address of the user to check.
+/// @param opcode The opcode to query.
 /// @return True if authorized (via roles, public, or owner), false otherwise.
 @pure
 fun Auth.isAuthorized(self, user: address, opcode: Opcode): bool {
@@ -64,8 +64,8 @@ fun Auth.isAuthorized(self, user: address, opcode: Opcode): bool {
 
 /// Requires that a user is authorized for an opcode, or throws an error.
 /// @param self The Auth structure instance.
-/// @param user The address of the user.
-/// @param opcode The opcode to check.
+/// @param user The address of the user to check.
+/// @param opcode The opcode to query.
 /// @dev Throws ERR_NOT_AUTHORIZED if not authorized.
 fun Auth.requireAuth(self, user: address, opcode: Opcode) {
     assert(self.isAuthorized(user, opcode), ERR_NOT_AUTHORIZED);
