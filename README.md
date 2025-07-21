@@ -1,6 +1,5 @@
 # 🔐 Role Authority Module for TON
 
-[![Inspired by Solmate](https://img.shields.io/badge/Inspired%20by-Solmate-blue?style=flat-square&logo=ethereum)](https://github.com/transmissions11/solmate/tree/main/src/auth)
 [![Built for TON](https://img.shields.io/badge/Built%20for-TON-0088cc?style=flat-square)](https://ton.org)
 [![Language](https://img.shields.io/badge/Language-Tolk-green?style=flat-square)](https://github.com/ton-blockchain/tolk)
 
