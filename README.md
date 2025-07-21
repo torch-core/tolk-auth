@@ -1,22 +1,26 @@
-# Role Authority Module for TON
+# 🔐 Role Authority Module for TON
+
+[![Inspired by Solmate](https://img.shields.io/badge/Inspired%20by-Solmate-blue?style=flat-square&logo=ethereum)](https://github.com/transmissions11/solmate/tree/main/src/auth)
+[![Built for TON](https://img.shields.io/badge/Built%20for-TON-0088cc?style=flat-square)](https://ton.org)
+[![Language](https://img.shields.io/badge/Language-Tolk-green?style=flat-square)](https://github.com/ton-blockchain/tolk)
 
 The Role Authority module is a role-based authority system designed specifically for TON smart contracts using the Tolk language. It enables developers to easily implement permission management without rewriting similar logic and tests for every project. 
 
 This module is inspired by [Solmate's RolesAuthority in Solidity](https://github.com/transmissions11/solmate/tree/main/src/auth) but adapted for TON's characteristics, utilizing efficient bitmask operations for roles.
 
-## Permission Check Mechanism
+## 🔍 Permission Check Mechanism
 
 When the contract receives an internal message, the system validates the caller (`in.senderAddress`) after reading the opcode. There are three ways to pass the check:
 
-### Owner
+### 👑 Owner
 
 If the caller is the contract's owner, they can execute all opcodes. This serves as the ultimate fallback mechanism, ensuring the owner always has control over the system, even if other permissions fail.
 
-### Public Capability
+### 🌐 Public Capability
 
 If the opcode is set as public, any address can call it without requiring a specific role. This is suitable for open operations, such as querying state.
 
-### Role Capability
+### 🎭 Role Capability
 
 Role permissions allow assigning roles to specific opcodes. Only users with matching roles can call them. For example, in the Counter contract, you can set a "Reset Role," so only addresses with this role can call `ResetCounter`.
 
@@ -29,9 +33,9 @@ To determine if a user can call a specific opcode (via the `canCall` function):
 
 The `isAuthorized` function further integrates the owner fallback: if `canCall` fails but the caller is the owner, it passes. `requireAuth` enforces this check with an assert, throwing an error if it fails.
 
-## Role Authority Architecture
+## 🏗️ Role Authority Architecture
 
-### Auth Structure
+### 📦 Auth Structure
 
 The `Auth` structure is the core data structure of the permission system, managing the owner and permission dictionaries. It supports up to 256 roles, using bitmasks in RoleMask (uint256). Add this structure to your contract's storage layout:
 
@@ -55,7 +59,7 @@ storage.auth = Auth.init(deployer_address, 86400); // 1 day timelock
 ```
 This ensures the system starts with an owner and defined timelock, avoiding unowned states.
 
-### OwnerInfo Structure
+### 👤 OwnerInfo Structure
 
 `OwnerInfo` encapsulates ownership transfer information, including timelock parameters:
 
@@ -73,7 +77,7 @@ struct OwnerInfo {
 - `timelockPeriod`: The timelock duration for ownership transfer (in seconds, e.g., 86400 seconds = 1 day).
 - `proposeTime`: The timestamp of the ownership transfer proposal (0 indicates no proposal).
 
-## Setting Public Opcodes
+## ⚙️ Setting Public Opcodes
 
 Send a `SetPublicCapability` message to set whether an opcode is publicly callable.
 
@@ -90,7 +94,7 @@ struct (0x714a73bb) SetPublicCapability {
 - Emits a `PublicCapabilityUpdated` event with the opcode and enabled status.
 - Usage Example: Send a message with `opcode = OP_INCREASE`, `enabled = true` to make `IncreaseCounter` public.
 
-## Assigning or Removing Role Permissions for Opcodes
+## 🔧 Assigning or Removing Role Permissions for Opcodes
 
 Send a `SetRoleCapability` message to assign or remove role permissions for a specific opcode.
 
@@ -109,7 +113,7 @@ struct (0xc6012bd0) SetRoleCapability {
 - Emits a `RoleCapabilityUpdated` event with the opcode, role, and enabled status.
 - Usage Example: Send a message with `role = 1`, `opcode = OP_RESET`, `enabled = true` to allow role 1 to execute reset.
 
-## Assigning or Removing Roles for Users
+## 👥 Assigning or Removing Roles for Users
 
 Send a `SetUserRole` message to assign or remove a role for a specific user.
 
@@ -128,7 +132,7 @@ struct (0xdd28b73e) SetUserRole {
 - Emits a `UserRoleUpdated` event with the user, role, and enabled status.
 - Usage Example: Send a message with `user = 0x...`, `role = 0`, `enabled = true` to assign role 0 (admin) to the user.
 
-# Ownership Transfer
+# 🔄 Ownership Transfer
 
 Ownership transfer is implemented as a two-stage process with a timelock for security.
 
@@ -143,7 +147,7 @@ Ownership transfer is implemented as a two-stage process with a timelock for sec
   - The current owner (or guardians) can send RevokePendingOwnership to cancel the transfer.
 - The `timelockPeriod` is set during contract deployment.
 
-# Get Methods
+# 📊 Get Methods
 
 The `get-methods.tolk` file in the role-authority folder implements the following get methods:
 
@@ -154,7 +158,7 @@ The `get-methods.tolk` file in the role-authority folder implements the followin
 
 These get methods are optional; you can read the contract state off-chain to achieve the same results.
 
-# Integration Guide
+# 🚀 Integration Guide
 
 To integrate the Role Authority module into your TON contract:
 
@@ -223,7 +227,7 @@ To integrate the Role Authority module into your TON contract:
 
 4. Determine which opcodes should be public, which require specific roles, and assign roles to addresses accordingly.
 
-# How to Run
+# 🏃 How to Run
 
 ```
 git clone https://github.com/ipromise2324/tolk-auth.git
@@ -231,7 +235,7 @@ pnpm install
 pnpm test
 ```
 
-# Contact
+# 📞 Contact
 
 If you have any questions or want to discuss, feel free to reach out:
 
