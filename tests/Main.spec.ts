@@ -61,10 +61,10 @@ describe('Role Authority Test', () => {
         it('should set public capability and unset public capability', async () => {
             // Set OP_INCREASE as public
             const opcode = Opcodes.INCREASE;
-            const result = await main.sendSetPublicCapability(owner.getSender(), opcode, true);
+            const setPublicResult = await main.sendSetPublicCapability(owner.getSender(), opcode, true);
 
             // Expect owner sends OP_SET_PUBLIC_CAPABILITY to main and success
-            expect(result.transactions).toHaveTransaction({
+            expect(setPublicResult.transactions).toHaveTransaction({
                 from: owner.address,
                 to: main.address,
                 success: true,
@@ -78,13 +78,13 @@ describe('Role Authority Test', () => {
             expect(publicCapability).toBe(true);
 
             // Check emit public capability
-            expectPublicCapabilityEmitLog(result, Opcodes.INCREASE, true);
+            expectPublicCapabilityEmitLog(setPublicResult, Opcodes.INCREASE, true);
 
             // Unset public capability
-            const result2 = await main.sendSetPublicCapability(owner.getSender(), opcode, false);
+            const unsetPublicResult = await main.sendSetPublicCapability(owner.getSender(), opcode, false);
 
             // Expect owner sends OP_SET_PUBLIC_CAPABILITY to main and success
-            expect(result2.transactions).toHaveTransaction({
+            expect(unsetPublicResult.transactions).toHaveTransaction({
                 from: owner.address,
                 to: main.address,
                 success: true,
@@ -98,15 +98,15 @@ describe('Role Authority Test', () => {
             expect(publicCapability2).toBe(false);
 
             // Check emit public capability
-            expectPublicCapabilityEmitLog(result2, Opcodes.INCREASE, false);
+            expectPublicCapabilityEmitLog(unsetPublicResult, Opcodes.INCREASE, false);
         });
         it('should set role capability and unset role capability', async () => {
             // Set RESET_ROLE to have OP_RESET capability
             const opcode = Opcodes.RESET;
-            const result = await main.sendSetRoleCapability(owner.getSender(), Roles.RESET, opcode, true);
+            const setRoleResult = await main.sendSetRoleCapability(owner.getSender(), Roles.RESET, opcode, true);
 
             // Expect owner sends OP_SET_ROLE_CAPABILITY to main and success
-            expect(result.transactions).toHaveTransaction({
+            expect(setRoleResult.transactions).toHaveTransaction({
                 from: owner.address,
                 to: main.address,
                 success: true,
@@ -124,13 +124,13 @@ describe('Role Authority Test', () => {
             expect(storage.rolesWithCapability.get(opcode)).toBe(1n << Roles.RESET);
 
             // Check emit role capability
-            expectRoleCapabilityEmitLog(result, Roles.RESET, opcode, true);
+            expectRoleCapabilityEmitLog(setRoleResult, Roles.RESET, opcode, true);
 
             // Unset role capability
-            const result2 = await main.sendSetRoleCapability(owner.getSender(), Roles.RESET, opcode, false);
+            const unsetRoleResult = await main.sendSetRoleCapability(owner.getSender(), Roles.RESET, opcode, false);
 
             // Expect owner sends OP_SET_ROLE_CAPABILITY to main and success
-            expect(result2.transactions).toHaveTransaction({
+            expect(unsetRoleResult.transactions).toHaveTransaction({
                 from: owner.address,
                 to: main.address,
                 success: true,
@@ -148,14 +148,14 @@ describe('Role Authority Test', () => {
             expect(storage2.rolesWithCapability.get(opcode)).toBe(0n);
 
             // Check emit role capability
-            expectRoleCapabilityEmitLog(result2, Roles.RESET, opcode, false);
+            expectRoleCapabilityEmitLog(unsetRoleResult, Roles.RESET, opcode, false);
         });
         it('should set user role and unset user role', async () => {
             // Set maxey to have RESET_ROLE
-            const result = await main.sendSetUserRole(owner.getSender(), maxey.address, Roles.RESET, true);
+            const setUserRoleResult = await main.sendSetUserRole(owner.getSender(), maxey.address, Roles.RESET, true);
 
             // Expect owner sends OP_SET_maxey_ROLE to main and success
-            expect(result.transactions).toHaveTransaction({
+            expect(setUserRoleResult.transactions).toHaveTransaction({
                 from: owner.address,
                 to: main.address,
                 success: true,
@@ -173,13 +173,18 @@ describe('Role Authority Test', () => {
             expect(storage.userRoles.get(maxey.address)).toBe(1n << Roles.RESET);
 
             // Check emit user role
-            expectUserRoleEmitLog(result, maxey.address, Roles.RESET, true);
+            expectUserRoleEmitLog(setUserRoleResult, maxey.address, Roles.RESET, true);
 
             // Unset user role
-            const result2 = await main.sendSetUserRole(owner.getSender(), maxey.address, Roles.RESET, false);
+            const unsetUserRoleResult = await main.sendSetUserRole(
+                owner.getSender(),
+                maxey.address,
+                Roles.RESET,
+                false,
+            );
 
             // Expect owner sends OP_SET_USER_ROLE to main and success
-            expect(result2.transactions).toHaveTransaction({
+            expect(unsetUserRoleResult.transactions).toHaveTransaction({
                 from: owner.address,
                 to: main.address,
                 success: true,
@@ -197,7 +202,7 @@ describe('Role Authority Test', () => {
             expect(storage2.userRoles.get(maxey.address)).toBe(0n);
 
             // Check emit user role
-            expectUserRoleEmitLog(result2, maxey.address, Roles.RESET, false);
+            expectUserRoleEmitLog(unsetUserRoleResult, maxey.address, Roles.RESET, false);
         });
         it('should propose ownership and claim ownership', async () => {
             // Propose ownership to new owner
