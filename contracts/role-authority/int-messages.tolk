@@ -1,5 +1,6 @@
 import "constants/type";
 
+/* Auth internal messages structs */
 struct (0xdd28b73e) SetUserRole {
     queryId: QueryID
     user: address
@@ -25,9 +26,11 @@ struct (0x7bb334c7) TransferOwnership {
     newOwner: address
 }
 
+/* Auth internal messages opcodes */
 const OP_SET_USER_ROLE = SetUserRole.getDeclaredPackPrefix();
 const OP_SET_ROLE_CAPABILITY = SetRoleCapability.getDeclaredPackPrefix();
 const OP_SET_PUBLIC_CAPABILITY = SetPublicCapability.getDeclaredPackPrefix();
 const OP_TRANSFER_OWNERSHIP = TransferOwnership.getDeclaredPackPrefix();
 
+// Add `AuthMessages` to your internal messages union to enable the Auth system. 
 type AuthMessages = SetUserRole | SetRoleCapability | SetPublicCapability | TransferOwnership;

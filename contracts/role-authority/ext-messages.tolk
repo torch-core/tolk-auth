@@ -1,5 +1,6 @@
 import "constants/type";
 
+/* Auth external messages structs */
 struct(0xd213468c) PublicCapabilityUpdated {
     opcode: Opcode
     enabled: bool
@@ -22,10 +23,13 @@ struct(0x45b9ecc7) OwnershipTransferred {
     newOwner: address
 }
 
+/* Auth external messages topics */
 const TOPIC_PUBLIC_CAPABILITY_UPDATED = PublicCapabilityUpdated.getDeclaredPackPrefix();
 const TOPIC_ROLE_CAPABILITY_UPDATED = RoleCapabilityUpdated.getDeclaredPackPrefix();
 const TOPIC_USER_ROLE_UPDATED = UserRoleUpdated.getDeclaredPackPrefix();
 const TOPIC_OWNERSHIP_TRANSFERRED = OwnershipTransferred.getDeclaredPackPrefix();
+
+/* Auth external messages functions */
 
 fun emitPublicCapabilityUpdated(opcode: Opcode, enabled: bool) {
     val emitMsg = createExternalLogMessage({

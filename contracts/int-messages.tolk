@@ -13,4 +13,5 @@ struct (0x3a752f06) ResetCounter {
 const OP_INCREASE = IncreaseCounter.getDeclaredPackPrefix();
 const OP_RESET = ResetCounter.getDeclaredPackPrefix();
 
+// Union AuthMessages to AllowedMessage to enable the Auth system.
 type AllowedMessage = IncreaseCounter | ResetCounter | AuthMessages;

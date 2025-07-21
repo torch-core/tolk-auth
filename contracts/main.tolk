@@ -15,6 +15,7 @@ fun onInternalMessage(in: InMessage) {
     var auth = lazy storage.auth.load();
 
     match (msg) {
+        /* Counter internal messages */
         IncreaseCounter => {
             auth.requireAuth(in.senderAddress, OP_INCREASE);
             storage.counter += msg.increaseBy;
@@ -25,6 +26,8 @@ fun onInternalMessage(in: InMessage) {
             storage.counter = 0;
             storage.save();
         }
+
+        /* Auth internal messages */
         SetPublicCapability => {
             auth.requireAuth(in.senderAddress, OP_SET_PUBLIC_CAPABILITY);
             storage.auth = auth.setPublicCapability(msg.opcode, msg.enabled);
