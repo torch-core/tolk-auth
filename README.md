@@ -33,7 +33,7 @@ The `isAuthorized` function further integrates the owner fallback: if `canCall` 
 
 The `Auth` structure is the core data structure of the permission system, managing the owner and permission dictionaries. It supports up to 256 roles, using bitmasks in RoleMask (uint256). Add this structure to your contract's storage layout:
 
-```tolk
+```solidity
 struct Auth {
     ownerInfo: OwnerInfo            // Stores ownership data, including current owner, pending owner, and timelock info.
     isCapabilityPublic: dict        // Dict<Opcode, bool>: Indicates if an opcode is public.
