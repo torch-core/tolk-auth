@@ -1,6 +1,8 @@
 import "storage";
 import "role-authority/constants/type";
 
+/* Counter get methods */
+
 get fun currentCounter(): int {
     val storage = lazy Storage.load();
     return storage.counter;
@@ -11,7 +13,10 @@ get fun initialId(): int {
     return storage.id;
 }
 
-// Auth get methods
+/* Auth get methods */
+
+/// Returns the address of the contract owner, who also controls the authority system.
+/// @return The owner address.
 get fun owner(): address {
     val storage = lazy Storage.load();
     val auth = lazy storage.auth.load();
