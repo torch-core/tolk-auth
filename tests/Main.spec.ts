@@ -1,9 +1,9 @@
-import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
-import { Cell, toNano } from '@ton/core';
+import { Blockchain, SandboxContract, SendMessageResult, TreasuryContract } from '@ton/sandbox';
+import { Address, Cell, toNano } from '@ton/core';
 import { Opcodes, Main, ErrorCodes, Roles, Topics } from '../wrappers/Main';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
-import { OPCODE_SIZE } from '../wrappers/constants/size';
+import { OPCODE_SIZE, ROLE_ID_SIZE } from '../wrappers/constants/size';
 
 describe('Role Authority Test', () => {
     let code: Cell;
@@ -16,6 +16,45 @@ describe('Role Authority Test', () => {
     let owner: SandboxContract<TreasuryContract>;
     let maxey: SandboxContract<TreasuryContract>;
     let main: SandboxContract<Main>;
+
+    // Helper function to check PUBLIC_CAPABILITY_UPDATED emit log
+    function expectPublicCapabilityEmitLog(result: SendMessageResult, opcode: number, enabled: boolean) {
+        expect(result.externals[0].info.dest?.value).toBe(Topics.PUBLIC_CAPABILITY_UPDATED);
+        const extBody = result.externals[0].body.beginParse();
+
+        expect(extBody.loadUintBig(OPCODE_SIZE)).toBe(Topics.PUBLIC_CAPABILITY_UPDATED);
+        expect(extBody.loadUint(OPCODE_SIZE)).toBe(opcode);
+        expect(extBody.loadBoolean()).toBe(enabled);
+    }
+
+    function expectRoleCapabilityEmitLog(result: SendMessageResult, role: bigint, opcode: number, enabled: boolean) {
+        expect(result.externals[0].info.dest?.value).toBe(Topics.ROLE_CAPABILITY_UPDATED);
+        const extBody = result.externals[0].body.beginParse();
+
+        expect(extBody.loadUintBig(OPCODE_SIZE)).toBe(Topics.ROLE_CAPABILITY_UPDATED);
+        expect(extBody.loadUint(OPCODE_SIZE)).toBe(opcode);
+        expect(extBody.loadUintBig(ROLE_ID_SIZE)).toBe(role);
+        expect(extBody.loadBoolean()).toBe(enabled);
+    }
+
+    function expectUserRoleEmitLog(result: SendMessageResult, user: Address, role: bigint, enabled: boolean) {
+        expect(result.externals[0].info.dest?.value).toBe(Topics.USER_ROLE_UPDATED);
+        const extBody = result.externals[0].body.beginParse();
+
+        expect(extBody.loadUintBig(OPCODE_SIZE)).toBe(Topics.USER_ROLE_UPDATED);
+        expect(extBody.loadAddress().equals(user)).toBeTruthy();
+        expect(extBody.loadUintBig(ROLE_ID_SIZE)).toBe(role);
+        expect(extBody.loadBoolean()).toBe(enabled);
+    }
+
+    function expectOwnershipTransferredEmitLog(result: SendMessageResult, sender: Address, newOwner: Address) {
+        expect(result.externals[0].info.dest?.value).toBe(Topics.OWNERSHIP_TRANSFERRED);
+        const extBody = result.externals[0].body.beginParse();
+
+        expect(extBody.loadUintBig(OPCODE_SIZE)).toBe(Topics.OWNERSHIP_TRANSFERRED);
+        expect(extBody.loadAddress().equals(sender)).toBeTruthy();
+        expect(extBody.loadAddress().equals(newOwner)).toBeTruthy();
+    }
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
@@ -64,12 +103,7 @@ describe('Role Authority Test', () => {
             expect(publicCapability).toBe(true);
 
             // Check emit public capability
-            expect(result.externals[0].info.dest?.value).toBe(Topics.PUBLIC_CAPABILITY_UPDATED);
-            const extBody = result.externals[0].body.beginParse();
-
-            expect(extBody.loadUintBig(OPCODE_SIZE)).toBe(Topics.PUBLIC_CAPABILITY_UPDATED);
-            expect(extBody.loadUint(OPCODE_SIZE)).toBe(Opcodes.INCREASE);
-            expect(extBody.loadBoolean()).toBe(true);
+            expectPublicCapabilityEmitLog(result, Opcodes.INCREASE, true);
 
             // Unset public capability
             const result2 = await main.sendSetPublicCapability(owner.getSender(), opcode, false);
@@ -89,12 +123,7 @@ describe('Role Authority Test', () => {
             expect(publicCapability2).toBe(false);
 
             // Check emit public capability
-            expect(result2.externals[0].info.dest?.value).toBe(Topics.PUBLIC_CAPABILITY_UPDATED);
-            const extBody2 = result2.externals[0].body.beginParse();
-
-            expect(extBody2.loadUintBig(OPCODE_SIZE)).toBe(Topics.PUBLIC_CAPABILITY_UPDATED);
-            expect(extBody2.loadUint(OPCODE_SIZE)).toBe(Opcodes.INCREASE);
-            expect(extBody2.loadBoolean()).toBe(false);
+            expectPublicCapabilityEmitLog(result2, Opcodes.INCREASE, false);
         });
         it('should set role capability and unset role capability', async () => {
             // Set RESET_ROLE to have OP_RESET capability
@@ -119,6 +148,9 @@ describe('Role Authority Test', () => {
             const storage = await main.getStorage();
             expect(storage.rolesWithCapability.get(opcode)).toBe(1n << Roles.RESET);
 
+            // Check emit role capability
+            expectRoleCapabilityEmitLog(result, Roles.RESET, opcode, true);
+
             // Unset role capability
             const result2 = await main.sendSetRoleCapability(owner.getSender(), Roles.RESET, opcode, false);
 
@@ -139,6 +171,9 @@ describe('Role Authority Test', () => {
             // Check Role capability
             const storage2 = await main.getStorage();
             expect(storage2.rolesWithCapability.get(opcode)).toBe(0n);
+
+            // Check emit role capability
+            expectRoleCapabilityEmitLog(result2, Roles.RESET, opcode, false);
         });
         it('should set user role and unset user role', async () => {
             // Set maxey to have RESET_ROLE
@@ -162,6 +197,9 @@ describe('Role Authority Test', () => {
             const storage = await main.getStorage();
             expect(storage.userRoles.get(maxey.address)).toBe(1n << Roles.RESET);
 
+            // Check emit user role
+            expectUserRoleEmitLog(result, maxey.address, Roles.RESET, true);
+
             // Unset user role
             const result2 = await main.sendSetUserRole(owner.getSender(), maxey.address, Roles.RESET, false);
 
@@ -182,6 +220,9 @@ describe('Role Authority Test', () => {
             // Check User role
             const storage2 = await main.getStorage();
             expect(storage2.userRoles.get(maxey.address)).toBe(0n);
+
+            // Check emit user role
+            expectUserRoleEmitLog(result2, maxey.address, Roles.RESET, false);
         });
         it('should transfer ownership', async () => {
             // Create new owner
@@ -203,6 +244,9 @@ describe('Role Authority Test', () => {
 
             // Expect current owner to be new owner
             expect(currentOwner.equals(newOwner.address)).toBeTruthy();
+
+            // Check emit ownership transferred
+            expectOwnershipTransferredEmitLog(result, owner.address, newOwner.address);
         });
     });
 
