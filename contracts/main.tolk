@@ -56,6 +56,7 @@ fun onInternalMessage(in: InMessage) {
             auth.requireTimelockPassed();
             auth.ownerInfo.owner = in.senderAddress;
             auth.ownerInfo.pendingOwner = createAddressNone();
+            auth.ownerInfo.proposeTime = 0;
             emitOwnershipClaimed(in.senderAddress);
             storage.auth = auth.toCell();
             storage.save();

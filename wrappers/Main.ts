@@ -87,6 +87,8 @@ export const Topics = {
 
 export const ErrorCodes = {
     NOT_AUTHORIZED: 1000,
+    NOT_PENDING_OWNER: 1001,
+    CLAIM_TOO_EARLY: 1002,
 };
 
 export class Main implements Contract {
