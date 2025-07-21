@@ -1,5 +1,9 @@
 tolk 1.0
 
+/// @title Counter Example with Role Authority Module
+/// @notice This contract demonstrates a minimal Counter implementation secured by the `role-authority` module.
+/// @dev For integration guidance, see the README in the root of the project.
+
 import "constants/error";
 import "int-messages";
 import "storage";
