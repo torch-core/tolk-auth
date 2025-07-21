@@ -10,13 +10,18 @@ import "ext-messages";
 /// For example, roles 1 and 3 result in a RoleMask of 0b00001010 (1 << 1 | 1 << 3).
 /// This struct should be included in your contract's storage layout.
 struct Auth {
+    ownerInfo: OwnerInfo            // Stores ownership data, including current owner, pending owner, and timelock info.
+    isCapabilityPublic: dict        // Dict<Opcode, bool>: Indicates if an opcode is public.
+    rolesWithCapability: dict       // Dict<Opcode, RoleMask>: Maps each opcode to the roles that are allowed to execute it (an opcode can be assigned to multiple roles).
+    userRoles: dict                 // Dict<address, RoleMask>: Maps user addresses to their assigned roles (a user can have multiple roles).
+}
+
+/// Encapsulates ownership transfer information, including timelock parameters.
+struct OwnerInfo {
     owner: address                  // Address of the contract owner, who also manages the authority logic.
     pendingOwner: address           // Address of the pending owner, who can claim the ownership after the timelock period.
     timelockPeriod: Timestamp       // Timelock period for the ownership can be claimed.
     proposeTime: Timestamp          // Timestamp of the ownership proposal.
-    isCapabilityPublic: dict        // Dict<Opcode, bool>: Indicates if an opcode is public.
-    rolesWithCapability: dict       // Dict<Opcode, RoleMask>: Maps each opcode to the roles that are allowed to execute it (an opcode can be assigned to multiple roles).
-    userRoles: dict                 // Dict<address, RoleMask>: Maps user addresses to their assigned roles (a user can have multiple roles).
 }
 
 /// Retrieves whether a given opcode has public capability.

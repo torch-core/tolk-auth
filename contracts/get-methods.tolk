@@ -1,5 +1,6 @@
 import "storage";
 import "role-authority/constants/type";
+import "role-authority/auth";
 
 /* Counter get methods */
 
@@ -15,12 +16,17 @@ get fun initialId(): int {
 
 /* Auth get methods */
 
-/// Returns the address of the contract owner, who also controls the authority system.
-/// @return The owner address.
-get fun owner(): address {
+/// Returns detailed information about the ownership status of the authority system.
+/// @notice Provides the current owner, pending owner (if any), propose time, and timelock duration.
+/// @return The OwnershipInfo structure containing:
+///   - owner: The address of the current owner.
+///   - pendingOwner: The address of the pending owner (address(0) if not set).
+///   - proposeTime: The timestamp when the ownership transfer was proposed (0 if not set).
+///   - timelockPeriod: The timelock period in seconds required before claiming ownership.
+get fun ownerInfo(): OwnerInfo {
     val storage = lazy Storage.load();
     val auth = lazy storage.auth.load();
-    return auth.owner;
+    return auth.ownerInfo;
 }
 
 /// Checks if an opcode has public capability.
