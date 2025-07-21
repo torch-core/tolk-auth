@@ -159,7 +159,7 @@ These get methods are optional; you can read the contract state off-chain to ach
 
 To integrate the Role Authority module into your TON contract:
 
-1. Copy the `role-authority` folder into your contract directory.
+1. Copy the [role-authority folder](https://github.com/ipromise2324/tolk-auth/tree/main/contracts/role-authority) into your contract directory.
    
 2. Add the `Auth` structure to your contract's storage layout:
    ```solidity
