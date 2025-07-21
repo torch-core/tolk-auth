@@ -120,11 +120,32 @@ struct (0xdd28b73e) SetUserRole {
 
 ### Bitmask Operations
 
-Both operations use same bitmask logic:
-- **Enable**: Adds the role bit using OR (`| 1 << role`)
-  - Example: Enabling role 2 on mask 0b1 becomes 0b101 (roles 0 and 2)
-- **Disable**: Removes the role bit using AND NOT (`& ~(1 << role)`)
-  - Example: Disabling role 2 from 0b101 becomes 0b1
+#### ✅ Enable a Role
+
+To **enable** a role, set the corresponding bit in the bitmask using bitwise OR:
+
+```ts
+mask = mask | (1 << role)
+```
+
+📌 **Example: Enable Role 2 on mask `0b0001` (only Role 0 enabled)**
+
+* `1 << 2` = `0b0100` → this is the bitmask for **Role 2**
+* `0b0001 | 0b0100` = `0b0101` → now **Role 0 and Role 2 are enabled**
+
+#### ❌ Disable a Role
+
+To **disable** a role, clear the corresponding bit using bitwise AND with the inverse:
+
+```ts
+mask = mask & ~(1 << role)
+```
+
+📌 **Example: Disable Role 2 from mask `0b0101` (Role 0 and Role 2 enabled)**
+
+* `1 << 2` = `0b0100` → bitmask for **Role 2**
+* `~(1 << 2)` = `~0b0100` = `0b1011`
+* `0b0101 & 0b1011` = `0b0001` → now only **Role 0 is enabled**
 
 Events are emitted for tracking: `RoleCapabilityUpdated` for opcode permissions and `UserRoleUpdated` for user roles.
 
