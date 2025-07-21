@@ -17,20 +17,20 @@ If the caller is the contract's owner, they can execute all opcodes. This serves
 
 ### 🌐 Public Capability
 
-If the opcode is set as public, any address can call it without requiring a specific role. This is suitable for open operations, such as querying state.
+If the opcode is set as public, any address can call it without requiring a specific role. This is suitable for open operations, such as deposit or swap.
 
 ### 🎭 Role Capability
 
-Role permissions allow assigning roles to specific opcodes. Only users with matching roles can call them. For example, in the Counter contract, you can set a "Reset Role," so only addresses with this role can call `ResetCounter`.
+Role permissions allow assigning roles to specific opcodes. Only users with matching roles can call them. 
 
-To determine if a user can call a specific opcode (via the `canCall` function):
-- First, check if the opcode is public (`isPublic = true`). If yes, pass.
+For example, in the Counter contract, you can set a "Reset Role" so only addresses with this role can call `ResetCounter`.
+
+To determine if a user can call a specific opcode:
+- First, check if the opcode is public. If yes, pass.
 - If not, retrieve the user's role mask (`userRoleMask`) and the opcode's allowed role mask (`opRoleMask`).
   - `userRoleMask` represents the combined bitmask of roles the user possesses, retrieved from the `userRoles` dictionary.
   - `opRoleMask` represents the combined bitmask of roles allowed to execute the opcode, retrieved from the `rolesWithCapability` dictionary.
-- Then, compute `(userRoleMask & opRoleMask) != 0` to check for intersection (i.e., at least one common role). The intersection (&) verifies if any bit is set in both masks, meaning the user has at least one required role.
-
-The `isAuthorized` function further integrates the owner fallback: if `canCall` fails but the caller is the owner, it passes. `requireAuth` enforces this check with an assert, throwing an error if it fails.
+- Then, compute `(userRoleMask & opRoleMask) != 0` to check for intersection. The intersection (&) verifies if any bit is set in both masks, meaning the user has at least one required role.
 
 ## 🏗️ Role Authority Architecture
 
