@@ -127,7 +127,7 @@ struct (0xdd28b73e) SetUserRole {
 - If enabled, adds the role bit using OR (`| 1 << role`), e.g., enabling role 3 on mask 0b10 (role 1) becomes 0b1010 (roles 1 and 3).
 - If disabled, removes the role bit using AND NOT (`& ~(1 << role)`), e.g., disabling role 3 from 0b1010 becomes 0b10.
 - Emits a `UserRoleUpdated` event with the user, role, and enabled status.
-- Usage Example: Send a message with `user = 0x...`, `role = 0`, `enabled = true` to assign role 0 (admin) to the user.
+- Usage Example: Send a message with `user = EQ...`, `role = 0`, `enabled = true` to assign role 0 (admin) to the user.
 
 # 🔄 Ownership Transfer
 
