@@ -90,9 +90,11 @@ struct (0x714a73bb) SetPublicCapability {
 - Initially, only the owner can set this; later, roles can be assigned for others.
 - Emits a `PublicCapabilityUpdated` event with the opcode and enabled status.
 
-## 🔧 Assigning or Removing Role Permissions for Opcodes
+## 🔧 Role and Permission Management
 
-Send a `SetRoleCapability` message to assign or remove role permissions for a specific opcode.
+### Assigning Role Permissions to Opcodes
+
+Send a `SetRoleCapability` message to assign or remove role permissions for opcodes:
 
 ```solidity
 struct (0xc6012bd0) SetRoleCapability {
@@ -103,14 +105,9 @@ struct (0xc6012bd0) SetRoleCapability {
 }
 ```
 
-- Retrieves the current mask for the opcode from `rolesWithCapability`.
-- If enabled, adds the role bit using OR (`| 1 << role`), e.g., enabling role 2 on mask 0b1 (role 0) becomes 0b101 (roles 0 and 2).
-- If disabled, removes the role bit using AND NOT (`& ~(1 << role)`), e.g., disabling role 2 from 0b101 becomes 0b1.
-- Emits a `RoleCapabilityUpdated` event with the opcode, role, and enabled status.
+### Assigning Roles to Users
 
-## 👥 Assigning or Removing Roles for Users
-
-Send a `SetUserRole` message to assign or remove a role for a specific user.
+Send a `SetUserRole` message to assign or remove roles for users:
 
 ```solidity
 struct (0xdd28b73e) SetUserRole {
@@ -121,10 +118,15 @@ struct (0xdd28b73e) SetUserRole {
 }
 ```
 
-- Retrieves the current mask for the user from `userRoles`.
-- If enabled, adds the role bit using OR (`| 1 << role`), e.g., enabling role 3 on mask 0b10 (role 1) becomes 0b1010 (roles 1 and 3).
-- If disabled, removes the role bit using AND NOT (`& ~(1 << role)`), e.g., disabling role 3 from 0b1010 becomes 0b10.
-- Emits a `UserRoleUpdated` event with the user, role, and enabled status.
+### Bitmask Operations
+
+Both operations use same bitmask logic:
+- **Enable**: Adds the role bit using OR (`| 1 << role`)
+  - Example: Enabling role 2 on mask 0b1 becomes 0b101 (roles 0 and 2)
+- **Disable**: Removes the role bit using AND NOT (`& ~(1 << role)`)
+  - Example: Disabling role 2 from 0b101 becomes 0b1
+
+Events are emitted for tracking: `RoleCapabilityUpdated` for opcode permissions and `UserRoleUpdated` for user roles.
 
 # 🔄 Ownership Transfer
 
