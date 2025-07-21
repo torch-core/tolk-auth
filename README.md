@@ -37,7 +37,7 @@ To determine if a user can call a specific opcode:
 ### 📦 Auth Structure
 
 - The `Auth` structure is the core data structure of the permission system, managing the owner and permission dictionaries. 
-- It supports up to 256 roles, using bitmasks in RoleMask (uint256). 
+- It supports up to 256 roles, using bitmasks in `RoleMask` (uint256). 
 - Add this structure to your contract's storage layout:
 
 ```solidity
@@ -51,8 +51,8 @@ struct Auth {
 
 - `ownerInfo`: Stores ownership transfer-related data, including the current owner, pending owner, propose time, and timelock period.
 - `isCapabilityPublic`: Dictionary marking whether opcodes are public (bool value).
-- `rolesWithCapability`: Dictionary mapping opcodes to allowed role masks (RoleMask).
-- `userRoles`: Dictionary mapping user addresses to their role masks (RoleMask).
+- `rolesWithCapability`: Dictionary mapping opcodes to allowed role masks (`RoleMask`).
+- `userRoles`: Dictionary mapping user addresses to their role masks (`RoleMask`).
 
 During contract deployment, initialize the Auth structure with the owner and timelock period.
 
