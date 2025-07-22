@@ -2,6 +2,11 @@ import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Opcodes, Main, ErrorCodes } from '../wrappers/Main';
 import '@ton/test-utils';
 import { createTestEnvironment } from './helper/setup';
+import {
+    expectOwnershipClaimedEmitLog,
+    expectOwnershipProposedEmitLog,
+    expectOwnershipRevokedEmitLog,
+} from './helper/log';
 
 describe('Owner role tests', () => {
     let blockchain: Blockchain;
@@ -9,11 +14,102 @@ describe('Owner role tests', () => {
     let maxey: SandboxContract<TreasuryContract>;
     let newOwner: SandboxContract<TreasuryContract>;
     let main: SandboxContract<Main>;
+    let now: number;
+    let timelockPeriod: number;
     const { getTestContext, resetToSnapshot } = createTestEnvironment();
     beforeEach(async () => {
         await resetToSnapshot();
-        ({ blockchain, owner, maxey, newOwner, main } = getTestContext());
+        ({ blockchain, owner, maxey, newOwner, main, now, timelockPeriod } = getTestContext());
     });
+
+    it('should propose ownership and claim ownership', async () => {
+        // Propose ownership to new owner
+        const proposeResult = await main.sendProposeOwnership(owner.getSender(), newOwner.address);
+
+        // Expect owner sends OP_TRANSFER_OWNERSHIP to main and success
+        expect(proposeResult.transactions).toHaveTransaction({
+            from: owner.address,
+            to: main.address,
+            success: true,
+            op: Opcodes.PROPOSE_OWNERSHIP,
+        });
+
+        // Get current owner
+        const currentOwner = await main.getOwnerInfo();
+
+        // Expect current owner to be owner
+        expect(currentOwner.owner.equals(owner.address)).toBeTruthy();
+
+        // Expect pending owner to be new owner
+        expect(currentOwner.pendingOwner?.equals(newOwner.address)).toBeTruthy();
+
+        // Expect propose time to be now
+        expect(currentOwner.proposeTime).toBe(now);
+
+        // Check emit ownership proposed
+        expectOwnershipProposedEmitLog(proposeResult, owner.address, newOwner.address, now, timelockPeriod);
+
+        // Wait for timelock period
+        blockchain.now = now + timelockPeriod + 1;
+
+        // Claim ownership
+        const claimResult = await main.sendClaimOwnership(newOwner.getSender());
+
+        // Expect new owner sends OP_CLAIM_OWNERSHIP to main and success
+        expect(claimResult.transactions).toHaveTransaction({
+            from: newOwner.address,
+            to: main.address,
+            success: true,
+            op: Opcodes.CLAIM_OWNERSHIP,
+        });
+
+        // Get current owner
+        const currentOwnerAfterClaim = await main.getOwnerInfo();
+
+        // Expect current owner to be new owner
+        expect(currentOwnerAfterClaim.owner.equals(newOwner.address)).toBeTruthy();
+
+        // Expect pending owner to be null
+        expect(currentOwnerAfterClaim.pendingOwner == null).toBeTruthy();
+
+        // Expect propose time to be 0
+        expect(currentOwnerAfterClaim.proposeTime).toBe(0);
+
+        // Check emit ownership claimed
+        expectOwnershipClaimedEmitLog(claimResult, newOwner.address);
+    });
+
+    it('should revoke pending ownership', async () => {
+        // Propose ownership to new owner
+        await main.sendProposeOwnership(owner.getSender(), newOwner.address);
+
+        // Revoke pending ownership
+        const revokeResult = await main.sendRevokePendingOwnership(owner.getSender());
+
+        // Expect owner sends OP_REVOKE_PENDING_OWNERSHIP to main and success
+        expect(revokeResult.transactions).toHaveTransaction({
+            from: owner.address,
+            to: main.address,
+            success: true,
+            op: Opcodes.REVOKE_PENDING_OWNERSHIP,
+        });
+
+        // Get current owner
+        const currentOwner = await main.getOwnerInfo();
+
+        // Expect current owner to be owner
+        expect(currentOwner.owner.equals(owner.address)).toBeTruthy();
+
+        // Expect pending owner to be zero address
+        expect(currentOwner.pendingOwner == null).toBeTruthy();
+
+        // Expect propose time to be 0
+        expect(currentOwner.proposeTime).toBe(0);
+
+        // Check emit ownership revoked
+        expectOwnershipRevokedEmitLog(revokeResult, owner.address, newOwner.address);
+    });
+
     it('should owner increase counter without role capability and user role', async () => {
         const increaseTimes = 3;
         for (let i = 0; i < increaseTimes; i++) {

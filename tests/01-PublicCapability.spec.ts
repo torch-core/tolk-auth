@@ -2,6 +2,7 @@ import { SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Opcodes, Main, ErrorCodes } from '../wrappers/Main';
 import '@ton/test-utils';
 import { createTestEnvironment } from './helper/setup';
+import { expectPublicCapabilityEmitLog } from './helper/log';
 
 describe('Public Capability tests', () => {
     let owner: SandboxContract<TreasuryContract>;
@@ -11,6 +12,49 @@ describe('Public Capability tests', () => {
     beforeEach(async () => {
         await resetToSnapshot();
         ({ owner, maxey, main } = getTestContext());
+    });
+
+    it('should set public capability and unset public capability', async () => {
+        // Set OP_INCREASE as public
+        const opcode = Opcodes.INCREASE;
+        const setPublicResult = await main.sendSetPublicCapability(owner.getSender(), opcode, true);
+
+        // Expect owner sends OP_SET_PUBLIC_CAPABILITY to main and success
+        expect(setPublicResult.transactions).toHaveTransaction({
+            from: owner.address,
+            to: main.address,
+            success: true,
+            op: Opcodes.SET_PUBLIC_CAPABILITY,
+        });
+
+        // Get public capability
+        const publicCapability = await main.getPublicCapability(opcode);
+
+        // Expect public capability to be true
+        expect(publicCapability).toBe(true);
+
+        // Check emit public capability
+        expectPublicCapabilityEmitLog(setPublicResult, Opcodes.INCREASE, true);
+
+        // Unset public capability
+        const unsetPublicResult = await main.sendSetPublicCapability(owner.getSender(), opcode, false);
+
+        // Expect owner sends OP_SET_PUBLIC_CAPABILITY to main and success
+        expect(unsetPublicResult.transactions).toHaveTransaction({
+            from: owner.address,
+            to: main.address,
+            success: true,
+            op: Opcodes.SET_PUBLIC_CAPABILITY,
+        });
+
+        // Get public capability
+        const publicCapability2 = await main.getPublicCapability(opcode);
+
+        // Expect public capability to be false
+        expect(publicCapability2).toBe(false);
+
+        // Check emit public capability
+        expectPublicCapabilityEmitLog(unsetPublicResult, Opcodes.INCREASE, false);
     });
     it('should increase counter after setting public capability', async () => {
         // Set increase opcode as public
