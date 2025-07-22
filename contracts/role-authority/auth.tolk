@@ -2,6 +2,7 @@ import "@stdlib/tvm-dicts";
 import "constants/size";
 import "constants/type";
 import "ext-messages";
+import "utils";
 
 /// The main structure managing the authority data, including owner and permission dictionaries.
 /// The system supports up to 256 distinct roles in total, represented as bits in a RoleMask (uint256).
@@ -60,7 +61,7 @@ fun Auth.getUserRoles(self, user: address): RoleMask {
 /// @param enabled True to enable public capability, false to disable.
 /// @dev Emits an TOPIC_PUBLIC_CAPABILITY_UPDATED event after setting the capability.
 fun Auth.setPublicCapability(mutate self, opcode: Opcode, enabled: bool) {
-    self.isCapabilityPublic.uDictSet(OPCODE_SIZE, opcode, beginCell().storeBool(enabled).endCell().beginParse());
+    self.isCapabilityPublic.uDictSet(OPCODE_SIZE, opcode, packDictSliceValue(enabled));
     emitPublicCapabilityUpdated(opcode, enabled);
 
     return self.toCell();
@@ -75,7 +76,7 @@ fun Auth.setPublicCapability(mutate self, opcode: Opcode, enabled: bool) {
 fun Auth.setRoleCapability(mutate self, role: RoleId, opcode: Opcode, enabled: bool) {
     val currentMask = self.getRoleCapability(opcode);
     val newMask = enabled ? (currentMask | 1 << role) : (currentMask & ~(1 << role));
-    self.rolesWithCapability.uDictSet(OPCODE_SIZE, opcode, beginCell().storeUint(newMask, ROLE_MASK_SIZE).endCell().beginParse());
+    self.rolesWithCapability.uDictSet(OPCODE_SIZE, opcode, packDictSliceValue(newMask));
     emitRoleCapabilityUpdated(opcode, role, enabled);
 
     return self.toCell();
@@ -90,7 +91,7 @@ fun Auth.setRoleCapability(mutate self, role: RoleId, opcode: Opcode, enabled: b
 fun Auth.setUserRole(mutate self, user: address, role: RoleId, enabled: bool) {
     val currentMask = self.getUserRoles(user);
     val newMask = enabled ? (currentMask | 1 << role) : (currentMask & ~(1 << role));
-    self.userRoles.sDictSet(ADDRESS_SIZE, user as slice, beginCell().storeUint(newMask, ROLE_MASK_SIZE).endCell().beginParse());
+    self.userRoles.sDictSet(ADDRESS_SIZE, user as slice, packDictSliceValue(newMask));
     emitUserRoleUpdated(user, role, enabled);
     
     return self.toCell();

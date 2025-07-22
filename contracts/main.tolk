@@ -2,7 +2,7 @@ tolk 1.0
 
 /// @title Counter Example with Role Authority Module
 /// @notice This contract demonstrates a minimal Counter implementation secured by the `role-authority` module.
-/// @dev For integration guidance, see the README in the root of the project.
+/// @dev For integration guidance, see the README (https://github.com/ipromise2324/tolk-auth?tab=readme-ov-file#bitmask-operations).
 
 import "constants/error";
 import "int-messages";
@@ -60,18 +60,14 @@ fun onInternalMessage(in: InMessage) {
             auth.requirePendingOwner(in.senderAddress);
             auth.requireTimelockPassed();
             auth.ownerInfo.owner = in.senderAddress;
-            auth.ownerInfo.pendingOwner = createAddressNone();
-            auth.ownerInfo.proposeTime = 0;
             emitOwnershipClaimed(in.senderAddress);
-            storage.auth = auth.toCell();
+            storage.auth = auth.clearPendingOwner();
             storage.save();
         }
         RevokePendingOwnership => {
             auth.requireAuth(in.senderAddress, OP_REVOKE_PENDING_OWNERSHIP);
             emitOwnershipRevoked(in.senderAddress, auth.ownerInfo.pendingOwner);
-            auth.ownerInfo.pendingOwner = createAddressNone();
-            auth.ownerInfo.proposeTime = 0;
-            storage.auth = auth.toCell();
+            storage.auth = auth.clearPendingOwner();
             storage.save();
         }
         else => {
