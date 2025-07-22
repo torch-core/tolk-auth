@@ -9,6 +9,10 @@ The Role Authority system is a role-based authority system designed specifically
 
 This system is inspired by [Solmate's RolesAuthority in Solidity](https://github.com/transmissions11/solmate/tree/main/src/auth) but adapted for TON's characteristics, utilizing efficient bitmask operations for roles.
 
+## ⚠️ Security Notice
+
+**This smart contract has not been audited.** Please exercise caution and perform your own security review before using this code in production. The authors are not responsible for any potential security vulnerabilities or losses that may occur from using this code.
+
 ## 🔍 Permission Check Mechanism
 
 When the contract receives an internal message, the system validates the caller (`in.senderAddress`) after reading the opcode. There are three ways to pass the check:
@@ -275,3 +279,4 @@ If you have any questions or want to discuss, feel free to reach out:
 
 - Email: 168allen55@gmail.com
 - Telegram: https://t.me/kobeyourself
+- TON Wallet: `UQChc1fIWCxkvP58259wiX9qLjCn0c2ZwCO9cVmL3EkZi0MN`
