@@ -264,6 +264,7 @@ To integrate the Role Authority module into your TON contract:
 
 ```
 git clone https://github.com/ipromise2324/tolk-auth.git
+cd tolk-auth
 pnpm install
 pnpm test
 ```
