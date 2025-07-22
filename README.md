@@ -94,7 +94,7 @@ struct (0x714a73bb) SetPublicCapability {
 
 ## 🔧 Role and Permission Management
 
-### Assigning Role Permissions to Opcodes
+### Step 1: Assign Role Permissions to Opcodes
 
 Send a `OP_SET_ROLE_CAPABILITY` message to assign or remove role permissions for opcodes:
 
@@ -107,7 +107,7 @@ struct (0xc6012bd0) SetRoleCapability {
 }
 ```
 
-### Assigning Roles to Users
+### Step 2: Assign Roles to Users
 
 Send a `OP_SET_USER_ROLE` message to assign or remove roles for users:
 
