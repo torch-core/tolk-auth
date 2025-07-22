@@ -44,11 +44,11 @@ fun Auth.checkUserHasRole(self, user: address, role: RoleId): bool {
 ///      with the opcode's RoleMask.
 @pure
 fun Auth.canCall(self, user: address, opcode: Opcode): bool {
-    val userRoleMask = self.getUserRoles(user);
-    val opRoleMask = self.getRoleCapability(opcode);
     val isPublic = self.getPublicCapability(opcode);
+    val opRoleMask = self.getRoleCapability(opcode);
+    val userRoleMask = self.getUserRoles(user);
 
-    return (userRoleMask & opRoleMask) != 0 || isPublic;
+    return isPublic || (userRoleMask & opRoleMask) != 0;
 }
 
 /// Checks if a user is authorized for an opcode, including owner fallback.
