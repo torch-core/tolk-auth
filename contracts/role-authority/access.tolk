@@ -16,7 +16,8 @@ fun Auth.checkPublicCapability(self, opcode: Opcode): bool {
 /// @param role The role ID to check.
 /// @param opcode The opcode to query.
 /// @return True if the role has the capability, false otherwise.
-/// @dev Uses the same bitmask logic as `checkUserHasRole` to check the role's permission on the opcode.
+/// @dev Checks the bit at position `role` in the opcode's RoleMask using bitwise operations.
+///      Specifically: (opRoleMask >> role) shifts the bit to the lowest position, & 1 isolates it.
 fun Auth.checkRoleHasCapability(self, role: RoleId, opcode: Opcode): bool {
     val opRoleMask = self.getRoleCapability(opcode);
     return ((opRoleMask >> role) & 1) != 0;
@@ -27,8 +28,7 @@ fun Auth.checkRoleHasCapability(self, role: RoleId, opcode: Opcode): bool {
 /// @param user The address of the user to check.
 /// @param role The role ID to query.
 /// @return True if the user has the role, false otherwise.
-/// @dev Checks the bit at position `role` in the user's RoleMask using bitwise operations.
-///      Specifically: (userRoleMask >> role) shifts the bit to the lowest position, & 1 isolates it.
+/// @dev Uses the same bitmask logic as `checkRoleHasCapability` to check the user's role assignment.
 @pure
 fun Auth.checkUserHasRole(self, user: address, role: RoleId): bool {
     val userRoleMask = self.getUserRoles(user);
