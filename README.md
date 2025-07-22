@@ -85,8 +85,8 @@ Send a `OP_SET_PUBLIC_CAPABILITY` message to set whether an opcode is publicly c
 ```solidity
 struct (0x714a73bb) SetPublicCapability {
     queryId: QueryID
-    opcode: Opcode
-    enabled: bool
+    opcode: Opcode      // Target opcode to set public access for
+    enabled: bool       // Whether to enable or disable public access to the opcode
 }
 ```
 
@@ -105,7 +105,7 @@ struct (0xc6012bd0) SetRoleCapability {
     queryId: QueryID
     opcode: Opcode      // Target opcode to set the capability for
     role: RoleId        // Set this role to have the capability for the opcode
-    enabled: bool
+    enabled: bool       // Whether to enable or disable the role capability
 }
 ```
 
@@ -118,7 +118,7 @@ struct (0xdd28b73e) SetUserRole {
     queryId: QueryID
     user: address       // Target user to set the role for
     role: RoleId        // Grant this role to the user
-    enabled: bool
+    enabled: bool       // Whether to enable or disable the user role
 }
 ```
 

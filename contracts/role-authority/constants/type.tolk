@@ -1,4 +1,4 @@
-type QueryID = uint64;
+type QueryId = uint64;
 type RoleId = uint8;
 type RoleMask = uint256;
 type Opcode = uint32;

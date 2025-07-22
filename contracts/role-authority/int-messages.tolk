@@ -2,36 +2,36 @@ import "constants/type";
 
 /* Auth internal messages structs */
 struct (0x714a73bb) SetPublicCapability {
-    queryId: QueryID
-    opcode: Opcode
-    enabled: bool
+    queryId: QueryId
+    opcode: Opcode      // Target opcode to set public access for
+    enabled: bool       // Whether to enable or disable public access to the opcode
 }
 
 struct (0xc6012bd0) SetRoleCapability {
-    queryId: QueryID
+    queryId: QueryId
     opcode: Opcode      // Target opcode to set the capability for
     role: RoleId        // Set this role to have the capability for the opcode
-    enabled: bool
+    enabled: bool       // Whether to enable or disable the role capability
 }
 
 struct (0xdd28b73e) SetUserRole {
-    queryId: QueryID
+    queryId: QueryId
     user: address       // Target user to set the role for
     role: RoleId        // Grant this role to the user
-    enabled: bool
+    enabled: bool       // Whether to enable or disable the user role
 }
 
 struct (0x9c25dd71) ProposeOwnership {
-    queryId: QueryID
+    queryId: QueryId
     newOwner: address
 }
 
 struct (0xb835b5cb) ClaimOwnership {
-    queryId: QueryID
+    queryId: QueryId
 }
 
 struct (0x3d89e313) RevokePendingOwnership {
-    queryId: QueryID
+    queryId: QueryId
 }
 
 /* Auth internal messages opcodes */
