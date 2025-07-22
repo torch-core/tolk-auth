@@ -197,8 +197,8 @@ To integrate the Role Authority module into your TON contract:
 
 3. Add `AuthMessages` to your `AllowedMessage` union:
    ```solidity
-    import "role-authority/int-messages";
-    import "role-authority/constants/type";
+   import "role-authority/int-messages";   
+   import "role-authority/constants/type";
 
    // Union AuthMessages to AllowedMessage to enable the Auth system.
    type AllowedMessage = IncreaseCounter | ResetCounter | AuthMessages;
@@ -206,11 +206,11 @@ To integrate the Role Authority module into your TON contract:
 
 4. In `onInternalMessage`, add match cases for `AuthMessages`:
    ```solidity
-    import "role-authority/auth";
-    import "role-authority/access";
-    import "role-authority/int-messages";
-    import "role-authority/ext-messages";
-    import "role-authority/get-methods";
+   import "role-authority/auth";
+   import "role-authority/access";
+   import "role-authority/int-messages";
+   import "role-authority/ext-messages";
+   import "role-authority/get-methods";
 
    /* Auth internal messages */
    SetPublicCapability => {
