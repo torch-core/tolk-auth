@@ -12,12 +12,3 @@ fun packDictSliceValue(dictValue: RoleMask | bool): slice {
     }
 }
 
-/// @dev Clears pending owner information after ownership claim or revocation
-/// @notice Resets pendingOwner to none and proposeTime to 0
-/// @return cell The updated auth state as a cell
-fun Auth.clearPendingOwner(mutate self) {
-    self.ownerInfo.pendingOwner = createAddressNone();
-    self.ownerInfo.proposeTime = 0;
-
-    return self.toCell();
-}

@@ -2,7 +2,7 @@ import "@stdlib/tvm-dicts";
 import "constants/size";
 import "constants/type";
 import "ext-messages";
-import "utils";
+import "pack";
 
 /// The main structure managing the authority data, including owner and permission dictionaries.
 /// The system supports up to 256 distinct roles in total, represented as bits in a RoleMask (uint256).
@@ -94,5 +94,15 @@ fun Auth.setUserRole(mutate self, user: address, role: RoleId, enabled: bool) {
     self.userRoles.sDictSet(ADDRESS_SIZE, user as slice, packDictSliceValue(newMask));
     emitUserRoleUpdated(user, role, enabled);
     
+    return self.toCell();
+}
+
+/// @dev Clears pending owner information after ownership claim or revocation
+/// @notice Resets pendingOwner to none and proposeTime to 0
+/// @return cell The updated auth state as a cell
+fun Auth.clearPendingOwner(mutate self) {
+    self.ownerInfo.pendingOwner = createAddressNone();
+    self.ownerInfo.proposeTime = 0;
+
     return self.toCell();
 }
