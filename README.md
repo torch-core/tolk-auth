@@ -186,6 +186,8 @@ To integrate the Role Authority module into your TON contract:
    
 2. Add the `Auth` structure to your contract's storage layout:
    ```solidity
+   import "role-authority/auth";
+
    struct Storage {
        id: uint32
        counter: uint32
@@ -195,12 +197,21 @@ To integrate the Role Authority module into your TON contract:
 
 3. Add `AuthMessages` to your `AllowedMessage` union:
    ```solidity
+    import "role-authority/int-messages";
+    import "role-authority/constants/type";
+
    // Union AuthMessages to AllowedMessage to enable the Auth system.
    type AllowedMessage = IncreaseCounter | ResetCounter | AuthMessages;
    ```
 
 4. In `onInternalMessage`, add match cases for `AuthMessages`:
    ```solidity
+    import "role-authority/auth";
+    import "role-authority/access";
+    import "role-authority/int-messages";
+    import "role-authority/ext-messages";
+    import "role-authority/get-methods";
+
    /* Auth internal messages */
    SetPublicCapability => {
        auth.requireAuth(in.senderAddress, OP_SET_PUBLIC_CAPABILITY);
@@ -244,8 +255,6 @@ To integrate the Role Authority module into your TON contract:
        storage.save();
    }
    ```
-
-   - Remember to import files from the `role-authority` folder: `auth`, `access`, `int-messages`, `ext-messages`, `get-methods`.
 
 5. Determine which opcodes should be public, which require specific roles, and assign roles to addresses accordingly.
 
