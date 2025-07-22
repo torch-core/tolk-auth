@@ -6,7 +6,7 @@ import { compile } from '@ton/blueprint';
 export const createTestEnvironment = () => {
     // Blockchain
     let blockchain: Blockchain;
-    let snapshot: BlockchainSnapshot | null = null;
+    let initSnapshot: BlockchainSnapshot | null = null;
 
     let code: Cell;
     let now: number;
@@ -46,13 +46,13 @@ export const createTestEnvironment = () => {
             success: true,
         });
 
-        snapshot = blockchain.snapshot();
+        initSnapshot = blockchain.snapshot();
     });
 
     // restore blockchain to initial state
-    const resetToSnapshot = async () => {
-        if (snapshot) {
-            await blockchain.loadFrom(snapshot);
+    const resetToInitSnapshot = async () => {
+        if (initSnapshot) {
+            await blockchain.loadFrom(initSnapshot);
         }
     };
 
@@ -69,7 +69,7 @@ export const createTestEnvironment = () => {
     };
 
     return {
-        resetToSnapshot,
+        resetToInitSnapshot: resetToInitSnapshot,
         getTestContext,
     };
 };

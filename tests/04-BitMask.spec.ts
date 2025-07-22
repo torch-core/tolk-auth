@@ -8,13 +8,13 @@ describe('Complex bit mask verification tests', () => {
     let owner: SandboxContract<TreasuryContract>;
     let maxey: SandboxContract<TreasuryContract>;
     let main: SandboxContract<Main>;
-    const { getTestContext, resetToSnapshot } = createTestEnvironment();
+    const { getTestContext, resetToInitSnapshot } = createTestEnvironment();
 
     beforeEach(async () => {
-        await resetToSnapshot();
+        await resetToInitSnapshot();
         ({ blockchain, owner, maxey, main } = getTestContext());
     });
-    
+
     // Helper functions for bit calculation verification
     const calculateRoleMask = (roles: bigint[]): bigint => {
         return roles.reduce((mask, role) => mask | (1n << role), 0n);

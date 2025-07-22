@@ -8,9 +8,9 @@ describe('Set Role Capability and User Role tests', () => {
     let owner: SandboxContract<TreasuryContract>;
     let maxey: SandboxContract<TreasuryContract>;
     let main: SandboxContract<Main>;
-    const { getTestContext, resetToSnapshot } = createTestEnvironment();
+    const { getTestContext, resetToInitSnapshot } = createTestEnvironment();
     beforeEach(async () => {
-        await resetToSnapshot();
+        await resetToInitSnapshot();
         ({ owner, maxey, main } = getTestContext());
     });
 

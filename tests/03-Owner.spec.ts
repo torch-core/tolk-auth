@@ -16,9 +16,9 @@ describe('Owner role tests', () => {
     let main: SandboxContract<Main>;
     let now: number;
     let timelockPeriod: number;
-    const { getTestContext, resetToSnapshot } = createTestEnvironment();
+    const { getTestContext, resetToInitSnapshot } = createTestEnvironment();
     beforeEach(async () => {
-        await resetToSnapshot();
+        await resetToInitSnapshot();
         ({ blockchain, owner, maxey, newOwner, main, now, timelockPeriod } = getTestContext());
     });
 
