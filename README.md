@@ -273,4 +273,5 @@ pnpm test
 
 If you have any questions or want to discuss, feel free to reach out:
 
+- Email: 168allen55@gmail.com
 - Telegram: https://t.me/kobeyourself
