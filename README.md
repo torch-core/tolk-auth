@@ -23,7 +23,7 @@ If the opcode is set as public, any address can call it without requiring a spec
 
 Role permissions allow assigning roles to specific opcodes. Only users with matching roles can call them. 
 
-For example, in the Counter contract, you can set a "Reset Role" so only addresses with this role can call `ResetCounter`.
+For example, in the Counter contract, you can set a "Reset Role" so only addresses with this role can call `OP_RESET`.
 
 To determine if a user can call a specific opcode:
 - First, check if the opcode is public. If yes, pass.
@@ -31,6 +31,8 @@ To determine if a user can call a specific opcode:
   - `userRoleMask` represents the combined bitmask of roles the user possesses, retrieved from the `userRoles` dictionary.
   - `opRoleMask` represents the combined bitmask of roles allowed to execute the opcode, retrieved from the `rolesWithCapability` dictionary.
 - Then, compute `(userRoleMask & opRoleMask) != 0` to check for intersection. The intersection (&) verifies if any bit is set in both masks, meaning the user has at least one required role.
+
+👉 See [**Bitmask Operations**](#bitmask-operations) for more details on how this works under the hood.
 
 ## 🏗️ Role Authority Architecture
 
@@ -51,8 +53,8 @@ struct Auth {
 
 - `ownerInfo`: Stores ownership transfer-related data, including the current owner, pending owner, propose time, and timelock period.
 - `isCapabilityPublic`: Dictionary marking whether opcodes are public (bool value).
-- `rolesWithCapability`: Dictionary mapping opcodes to allowed role masks (`RoleMask`).
-- `userRoles`: Dictionary mapping user addresses to their role masks (`RoleMask`).
+- `rolesWithCapability`: Dictionary mapping opcodes to allowed role masks.
+- `userRoles`: Dictionary mapping user addresses to their role masks.
 
 During contract deployment, initialize the Auth structure with the owner and timelock period.
 
@@ -76,7 +78,7 @@ struct OwnerInfo {
 
 ## ⚙️ Setting Public Opcodes
 
-Send a `SetPublicCapability` message to set whether an opcode is publicly callable.
+Send a `OP_SET_PUBLIC_CAPABILITY` message to set whether an opcode is publicly callable.
 
 ```solidity
 struct (0x714a73bb) SetPublicCapability {
@@ -88,13 +90,13 @@ struct (0x714a73bb) SetPublicCapability {
 
 - Updates the `isCapabilityPublic` dictionary with the `enabled` bool value for the opcode.
 - Initially, only the owner can set this; later, roles can be assigned for others.
-- Emits a `PublicCapabilityUpdated` event with the opcode and enabled status.
+- Emits a `TOPIC_PUBLIC_CAPABILITY_UPDATED` event with the opcode and enabled status.
 
 ## 🔧 Role and Permission Management
 
 ### Assigning Role Permissions to Opcodes
 
-Send a `SetRoleCapability` message to assign or remove role permissions for opcodes:
+Send a `OP_SET_ROLE_CAPABILITY` message to assign or remove role permissions for opcodes:
 
 ```solidity
 struct (0xc6012bd0) SetRoleCapability {
@@ -107,7 +109,7 @@ struct (0xc6012bd0) SetRoleCapability {
 
 ### Assigning Roles to Users
 
-Send a `SetUserRole` message to assign or remove roles for users:
+Send a `OP_SET_USER_ROLE` message to assign or remove roles for users:
 
 ```solidity
 struct (0xdd28b73e) SetUserRole {
@@ -147,21 +149,21 @@ mask = mask & ~(1 << role)
 * `~(1 << 2)` = `~0b0100` = `0b1011`
 * `0b0101 & 0b1011` = `0b0001` → now only **Role 0 is enabled**
 
-Events are emitted for tracking: `RoleCapabilityUpdated` for opcode permissions and `UserRoleUpdated` for user roles.
+Events are emitted for tracking: `TOPIC_ROLE_CAPABILITY_UPDATED` for opcode permissions and `TOPIC_USER_ROLE_UPDATED` for user roles.
 
 # 🔄 Ownership Transfer
 
 Ownership transfer is implemented as a two-stage process with a timelock for security.
 
 **Process**:
-  - The current owner sends a `ProposeOwnership` message specifying the new owner.
+  - The current owner sends a `OP_PROPOSE_OWNERSHIP` message specifying the new owner.
     - The new owner is recorded in `pendingOwner`.
     - `proposeTime` is set to the current timestamp.
-    - Emits an `OwnershipProposed` event.
+    - Emits an `TOPIC_OWNERSHIP_PROPOSED` event.
   - The pending owner can claim ownership via ClaimOwnership.
     - Must wait until `proposeTime + timelockPeriod` has passed.
-    - Emits an `OwnershipClaimed` event.
-  - The current owner (or guardians) can send `RevokePendingOwnership` to cancel the transfer.
+    - Emits an `TOPIC_OWNERSHIP_CLAIMED` event.
+  - The current owner (or guardians) can send `OP_REVOKE_PENDING_OWNERSHIP` to cancel the transfer.
 
 The `timelockPeriod` is set during contract deployment.
 
