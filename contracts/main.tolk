@@ -1,7 +1,7 @@
 tolk 1.0
 
-/// @title Counter Example with Role Authority Module
-/// @notice This contract demonstrates a minimal Counter implementation secured by the `role-authority` module.
+/// @title Counter Example with Role Authority System
+/// @notice This contract demonstrates a minimal Counter implementation secured by the `role-authority` system.
 /// @dev For integration guidance, see the README (https://github.com/ipromise2324/tolk-auth?tab=readme-ov-file#bitmask-operations).
 
 import "constants/error";

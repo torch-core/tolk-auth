@@ -1,13 +1,13 @@
-# 🔐 Role Authority Module for TON
+# 🔐 Role Authority System for TON
 
 [![Built for TON](https://img.shields.io/badge/Built%20for-TON-0088cc?style=flat-square)](https://ton.org)
 [![Language](https://img.shields.io/badge/Language-Tolk-green?style=flat-square)](https://docs.ton.org/v3/documentation/smart-contracts/tolk/overview)
 
 <img width="11214" height="4560" alt="image" src="https://github.com/user-attachments/assets/9cc6ce21-80d1-4af2-825e-38ccfbf4652e" />
 
-The Role Authority module is a role-based authority system designed specifically for TON smart contracts using the Tolk language. It enables developers to easily implement permission management without rewriting similar logic and tests for every project. 
+The Role Authority system is a role-based authority system designed specifically for TON smart contracts using the Tolk language. It enables developers to easily implement permission management without rewriting similar logic and tests for every project. 
 
-This module is inspired by [Solmate's RolesAuthority in Solidity](https://github.com/transmissions11/solmate/tree/main/src/auth) but adapted for TON's characteristics, utilizing efficient bitmask operations for roles.
+This system is inspired by [Solmate's RolesAuthority in Solidity](https://github.com/transmissions11/solmate/tree/main/src/auth) but adapted for TON's characteristics, utilizing efficient bitmask operations for roles.
 
 ## 🔍 Permission Check Mechanism
 
@@ -182,7 +182,7 @@ These get methods are optional; you can read the contract state off-chain to ach
 
 # 🚀 Integration Guide
 
-To integrate the Role Authority module into your TON contract:
+To integrate the Role Authority system into your TON contract:
 
 1. Copy the [role-authority folder](https://github.com/ipromise2324/tolk-auth/tree/main/contracts/role-authority) into your contract directory.
    
