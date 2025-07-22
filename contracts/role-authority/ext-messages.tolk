@@ -43,7 +43,6 @@ const TOPIC_OWNERSHIP_CLAIMED = OwnershipClaimed.getDeclaredPackPrefix();
 const TOPIC_OWNERSHIP_REVOKED = OwnershipRevoked.getDeclaredPackPrefix();
 
 /* Auth external messages functions */
-
 fun emitPublicCapabilityUpdated(opcode: Opcode, enabled: bool) {
     val emitMsg = createExternalLogMessage({
         dest: ExtOutLogBucket {topic: TOPIC_PUBLIC_CAPABILITY_UPDATED},
