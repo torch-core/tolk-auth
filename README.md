@@ -3,7 +3,7 @@
 [![Built for TON](https://img.shields.io/badge/Built%20for-TON-0088cc?style=flat-square)](https://ton.org)
 [![Language](https://img.shields.io/badge/Language-Tolk-green?style=flat-square)](https://docs.ton.org/v3/documentation/smart-contracts/tolk/overview)
 
-<img width="10649" height="4587" alt="image" src="https://github.com/user-attachments/assets/2c896f82-f782-4e6b-8a9b-7de7b6490b14" />
+<img width="11214" height="4560" alt="image" src="https://github.com/user-attachments/assets/9cc6ce21-80d1-4af2-825e-38ccfbf4652e" />
 
 The Role Authority module is a role-based authority system designed specifically for TON smart contracts using the Tolk language. It enables developers to easily implement permission management without rewriting similar logic and tests for every project. 
 
