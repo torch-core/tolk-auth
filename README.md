@@ -279,4 +279,4 @@ If you have any questions or want to discuss, feel free to reach out:
 
 - Email: 168allen55@gmail.com
 - Telegram: https://t.me/kobeyourself
-- TON Wallet: `UQChc1fIWCxkvP58259wiX9qLjCn0c2ZwCO9cVmL3EkZi0MN`
+- TON Wallet: [UQChc1fIWCxkvP58259wiX9qLjCn0c2ZwCO9cVmL3EkZi0MN](https://tonviewer.com/EQChc1fIWCxkvP58259wiX9qLjCn0c2ZwCO9cVmL3EkZix7I)
