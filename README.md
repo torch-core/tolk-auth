@@ -42,7 +42,7 @@ To determine if a user can call a specific opcode:
 
 - The `Auth` structure is the core data structure of the permission system, managing the owner and permission dictionaries. 
 - It supports up to 256 roles, using bitmasks in `RoleMask` (uint256). 
-- Add this structure to your contract's storage layout:
+- Add this structure to your contract's storage layout
 
 ```solidity
 struct Auth {
@@ -54,7 +54,7 @@ struct Auth {
 ```
 
 - `ownerInfo`: Stores ownership transfer-related data, including the current owner, pending owner, propose time, and timelock period.
-- `isCapabilityPublic`: Dictionary marking whether opcodes are public (bool value).
+- `isCapabilityPublic`: Dictionary marking whether opcodes are public.
 - `rolesWithCapability`: Dictionary mapping opcodes to allowed role masks.
 - `userRoles`: Dictionary mapping user addresses to their role masks.
 
@@ -169,11 +169,11 @@ Ownership transfer is implemented as a two-stage process with a timelock for sec
 
 The `timelockPeriod` is set during contract deployment.
 
-# 📊 Get Methods
+# 👀 Get Methods
 
-The `get-methods.tolk` file in the role-authority folder implements the following get methods:
+The `get-methods.tolk` file in the `role-authority` folder implements the following get methods:
 
-- `ownerInfo()`: Returns a tuple with owner, pendingOwner, proposeTime, timelockPeriod.
+- `ownerInfo()`: Returns with owner, pendingOwner, proposeTime, timelockPeriod.
 - `hasPublicCapability(opcode: Opcode)`: Checks if the opcode is public.
 - `hasCapability(role: RoleId, opcode: Opcode)`: Checks if the role has permission for the opcode.
 - `hasRole(user: address, role: RoleId)`: Checks if the user has the role.
