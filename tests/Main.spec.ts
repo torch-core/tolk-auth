@@ -302,10 +302,7 @@ describe('Role Authority Test', () => {
             const counterBefore = await main.getCounter();
 
             // increase counter
-            const increaseResult = await main.sendIncrease(maxey.getSender(), {
-                increaseBy: 1,
-                value: toNano('0.05'),
-            });
+            const increaseResult = await main.sendIncrease(maxey.getSender(), 1);
 
             // Expect maxey sends OP_INCREASE to main and success
             expect(increaseResult.transactions).toHaveTransaction({
@@ -324,10 +321,7 @@ describe('Role Authority Test', () => {
 
         it('should throw when increasing counter is not public', async () => {
             // maxey try to increase counter
-            const increaseResult = await main.sendIncrease(maxey.getSender(), {
-                increaseBy: 1,
-                value: toNano('0.05'),
-            });
+            const increaseResult = await main.sendIncrease(maxey.getSender(), 1);
 
             // Expect maxey sends OP_INCREASE to main and exit with NOT_AUTHORIZED
             expect(increaseResult.transactions).toHaveTransaction({
@@ -343,10 +337,7 @@ describe('Role Authority Test', () => {
     describe('Set Role Capability and User Role tests', () => {
         it('should reset counter after setting role capability and user role', async () => {
             // Owner increase counter
-            await main.sendIncrease(owner.getSender(), {
-                increaseBy: 1,
-                value: toNano('0.05'),
-            });
+            await main.sendIncrease(owner.getSender(), 1);
 
             // Get counter before
             const counterBefore = await main.getCounter();
@@ -361,9 +352,7 @@ describe('Role Authority Test', () => {
             await main.sendSetUserRole(owner.getSender(), maxey.address, Roles.RESET, true);
 
             // Reset counter
-            const resetResult = await main.sendReset(maxey.getSender(), {
-                value: toNano('0.05'),
-            });
+            const resetResult = await main.sendReset(maxey.getSender());
 
             // Expect maxey sends OP_RESET to main and success
             expect(resetResult.transactions).toHaveTransaction({
@@ -381,9 +370,7 @@ describe('Role Authority Test', () => {
         });
         it('should throw when reset counter before setting role capability and user role', async () => {
             // maxey try to reset counter
-            const resetResult = await main.sendReset(maxey.getSender(), {
-                value: toNano('0.05'),
-            });
+            const resetResult = await main.sendReset(maxey.getSender());
 
             // Expect maxey sends OP_RESET to main and exit with NOT_AUTHORIZED
             expect(resetResult.transactions).toHaveTransaction({
@@ -404,10 +391,7 @@ describe('Role Authority Test', () => {
 
                 const increaseBy = Math.floor(Math.random() * 100);
 
-                const increaseResult = await main.sendIncrease(owner.getSender(), {
-                    increaseBy,
-                    value: toNano('0.05'),
-                });
+                const increaseResult = await main.sendIncrease(owner.getSender(), increaseBy);
 
                 expect(increaseResult.transactions).toHaveTransaction({
                     from: owner.address,
@@ -425,16 +409,11 @@ describe('Role Authority Test', () => {
             expect(await main.getCounter()).toBe(0);
 
             const increaseBy = 5;
-            await main.sendIncrease(owner.getSender(), {
-                increaseBy,
-                value: toNano('0.05'),
-            });
+            await main.sendIncrease(owner.getSender(), increaseBy);
 
             expect(await main.getCounter()).toBe(increaseBy);
 
-            await main.sendReset(owner.getSender(), {
-                value: toNano('0.05'),
-            });
+            await main.sendReset(owner.getSender());
 
             expect(await main.getCounter()).toBe(0);
         });

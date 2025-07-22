@@ -182,6 +182,29 @@ export class Main implements Contract {
         };
     }
 
+    static createIncreaseArgs(increaseBy: number, queryID?: bigint) {
+        return {
+            value: toNano('0.03'),
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(Opcodes.INCREASE, OPCODE_SIZE)
+                .storeUint(queryID ?? 0, QUERY_ID_SIZE)
+                .storeUint(increaseBy, COUNTER_SIZE)
+                .endCell(),
+        };
+    }
+
+    static createResetArge(queryID?: bigint) {
+        return {
+            value: toNano('0.03'),
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(Opcodes.RESET, OPCODE_SIZE)
+                .storeUint(queryID ?? 0, QUERY_ID_SIZE)
+                .endCell(),
+        };
+    }
+
     async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {
         await provider.internal(via, {
             value,
@@ -190,42 +213,12 @@ export class Main implements Contract {
         });
     }
 
-    async sendIncrease(
-        provider: ContractProvider,
-        via: Sender,
-        opts: {
-            increaseBy: number;
-            value: bigint;
-            queryID?: number;
-        },
-    ) {
-        await provider.internal(via, {
-            value: opts.value,
-            sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell()
-                .storeUint(Opcodes.INCREASE, OPCODE_SIZE)
-                .storeUint(opts.queryID ?? 0, QUERY_ID_SIZE)
-                .storeUint(opts.increaseBy, COUNTER_SIZE)
-                .endCell(),
-        });
+    async sendIncrease(provider: ContractProvider, via: Sender, increaseBy: number, queryID?: bigint) {
+        await provider.internal(via, Main.createIncreaseArgs(increaseBy, queryID));
     }
 
-    async sendReset(
-        provider: ContractProvider,
-        via: Sender,
-        opts: {
-            value: bigint;
-            queryID?: number;
-        },
-    ) {
-        await provider.internal(via, {
-            value: opts.value,
-            sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell()
-                .storeUint(Opcodes.RESET, OPCODE_SIZE)
-                .storeUint(opts.queryID ?? 0, QUERY_ID_SIZE)
-                .endCell(),
-        });
+    async sendReset(provider: ContractProvider, via: Sender, queryID?: bigint) {
+        await provider.internal(via, Main.createResetArge(queryID));
     }
 
     async sendSetPublicCapability(
