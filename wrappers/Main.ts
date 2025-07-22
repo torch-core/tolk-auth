@@ -205,9 +205,9 @@ export class Main implements Contract {
         };
     }
 
-    async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {
+    async sendDeploy(provider: ContractProvider, via: Sender) {
         await provider.internal(via, {
-            value,
+            value: toNano('.05'),
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: beginCell().endCell(),
         });

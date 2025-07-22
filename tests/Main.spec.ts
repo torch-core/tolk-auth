@@ -47,7 +47,7 @@ describe('Role Authority Test', () => {
             ),
         );
 
-        const deployResult = await main.sendDeploy(owner.getSender(), toNano('0.05'));
+        const deployResult = await main.sendDeploy(owner.getSender());
 
         expect(deployResult.transactions).toHaveTransaction({
             from: owner.address,
