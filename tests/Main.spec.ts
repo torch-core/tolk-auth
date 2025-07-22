@@ -1,5 +1,5 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
-import { Cell, toNano } from '@ton/core';
+import { Cell } from '@ton/core';
 import { Opcodes, Main, ErrorCodes, Roles } from '../wrappers/Main';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
