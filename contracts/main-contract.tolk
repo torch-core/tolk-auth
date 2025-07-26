@@ -5,10 +5,10 @@ tolk 1.0
 /// @dev For integration guidance, see the README (https://github.com/ipromise2324/tolk-auth?tab=readme-ov-file#bitmask-operations).
 
 import "constants/error";
-import "role-authority/messages/internal/schema";
 import "storage";
 import "get-methods";
-import "messages/internal/schema";
+import "messages/internal/schemas";
+import "role-authority/messages/internal/schemas";
 import "role-authority/auth";
 import "role-authority/access";
 import "role-authority/messages/external/emit";

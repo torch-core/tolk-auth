@@ -1,4 +1,4 @@
-import "schema";
+import "schemas";
 import "../../constants/type"
 
 /* Auth external messages functions */

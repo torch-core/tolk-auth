@@ -1,4 +1,4 @@
-import "../../role-authority/messages/internal/schema";
+import "../../role-authority/messages/internal/schemas";
 import "../../role-authority/constants/type";
 
 struct (0x7e8764ef) IncreaseCounter {
