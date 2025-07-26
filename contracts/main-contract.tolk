@@ -5,13 +5,13 @@ tolk 1.0
 /// @dev For integration guidance, see the README (https://github.com/ipromise2324/tolk-auth?tab=readme-ov-file#bitmask-operations).
 
 import "constants/error";
-import "int-messages";
+import "role-authority/messages/internal/schema";
 import "storage";
 import "get-methods";
+import "messages/internal/schema";
 import "role-authority/auth";
 import "role-authority/access";
-import "role-authority/int-messages";
-import "role-authority/ext-messages";
+import "role-authority/messages/external/emit";
 import "role-authority/get-methods"; // Enables off-chain access to get methods. Removing this will disable them.
 
 fun onInternalMessage(in: InMessage) {
