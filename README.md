@@ -142,7 +142,7 @@ To **enable** a role, set the corresponding bit in the bitmask using bitwise OR:
 mask = mask | (1 << role)
 ```
 
-📌 **Example: Enable Role 2 on mask `0b0001` (only Role 0 enabled)**
+📌 **Example: Enable Role 2 on mask `0b0001` (currently only Role 0 enabled)**
 
 * `1 << 2` = `0b0100` → this is the bitmask for **Role 2**
 * `0b0001 | 0b0100` = `0b0101` → now **Role 0 and Role 2 are enabled**
@@ -155,7 +155,7 @@ To **disable** a role, clear the corresponding bit using bitwise AND with the in
 mask = mask & ~(1 << role)
 ```
 
-📌 **Example: Disable Role 2 from mask `0b0101` (Role 0 and Role 2 enabled)**
+📌 **Example: Disable Role 2 from mask `0b0101` (currently Role 0 and Role 2 enabled)**
 
 * `1 << 2` = `0b0100` → bitmask for **Role 2**
 * `~(1 << 2)` = `~0b0100` = `0b1011`
