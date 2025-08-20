@@ -7,6 +7,7 @@ import {
     expectOwnershipProposedEmitLog,
     expectOwnershipRevokedEmitLog,
 } from './helper/log';
+import { writeFileSync } from 'fs';
 
 describe('Owner role tests', () => {
     let blockchain: Blockchain;
@@ -20,6 +21,15 @@ describe('Owner role tests', () => {
     beforeEach(async () => {
         await resetToInitSnapshot();
         ({ blockchain, owner, maxey, newOwner, main, now, timelockPeriod } = getTestContext());
+    });
+
+    afterAll(() => {
+        const coverage = blockchain.coverage(main);
+        if (!coverage) return;
+
+        // Generate HTML report for detailed analysis
+        const coverageJson = coverage.toJson();
+        writeFileSync('./coverage/owner.json', coverageJson);
     });
 
     it('should propose ownership and claim ownership', async () => {

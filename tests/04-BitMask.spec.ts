@@ -2,6 +2,7 @@ import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Opcodes, Main } from '../wrappers/Main';
 import '@ton/test-utils';
 import { createTestEnvironment } from './helper/setup';
+import { writeFileSync } from 'fs';
 
 describe('Complex bit mask verification tests', () => {
     let blockchain: Blockchain;
@@ -13,6 +14,15 @@ describe('Complex bit mask verification tests', () => {
     beforeEach(async () => {
         await resetToInitSnapshot();
         ({ blockchain, owner, maxey, main } = getTestContext());
+    });
+
+    afterAll(() => {
+        const coverage = blockchain.coverage(main);
+        if (!coverage) return;
+
+        // Generate HTML report for detailed analysis
+        const coverageJson = coverage.toJson();
+        writeFileSync('./coverage/bit-mask.json', coverageJson);
     });
 
     // Helper functions for bit calculation verification

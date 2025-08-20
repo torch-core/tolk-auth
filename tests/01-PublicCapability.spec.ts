@@ -1,17 +1,28 @@
-import { SandboxContract, TreasuryContract } from '@ton/sandbox';
+import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Opcodes, Main, ErrorCodes } from '../wrappers/Main';
 import '@ton/test-utils';
 import { createTestEnvironment } from './helper/setup';
 import { expectPublicCapabilityEmitLog } from './helper/log';
+import { writeFileSync } from 'fs';
 
 describe('Public Capability tests', () => {
+    let blockchain: Blockchain;
     let owner: SandboxContract<TreasuryContract>;
     let maxey: SandboxContract<TreasuryContract>;
     let main: SandboxContract<Main>;
     const { getTestContext, resetToInitSnapshot } = createTestEnvironment();
     beforeEach(async () => {
         await resetToInitSnapshot();
-        ({ owner, maxey, main } = getTestContext());
+        ({ blockchain, owner, maxey, main } = getTestContext());
+    });
+
+    afterAll(() => {
+        const coverage = blockchain.coverage(main);
+        if (!coverage) return;
+
+        // Generate HTML report for detailed analysis
+        const coverageJson = coverage.toJson();
+        writeFileSync('./coverage/public-capability.json', coverageJson);
     });
 
     it('should set public capability and unset public capability', async () => {
