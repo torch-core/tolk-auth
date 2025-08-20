@@ -1,4 +1,5 @@
 import "auth";
+import "../constants/type"
 import "constants/type";
 import "constants/error";
 

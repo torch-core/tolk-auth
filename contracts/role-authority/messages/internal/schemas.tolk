@@ -1,3 +1,4 @@
+import "../../../constants/type"
 import "../../constants/type";
 
 /* Auth internal messages structs */

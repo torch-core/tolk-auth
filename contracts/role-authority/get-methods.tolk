@@ -1,6 +1,7 @@
-import "../storage";
+import "../constants/type"
 import "constants/type";
 import "auth";
+import "../storage";
 
 /// @title Optional Get Methods for Role Authority
 /// @notice View functions for reading role and ownership data from the authority system.

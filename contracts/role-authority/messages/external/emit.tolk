@@ -1,5 +1,6 @@
-import "schemas";
+import "../../../constants/type"
 import "../../constants/type"
+import "schemas";
 
 /* Auth external messages functions */
 fun emitPublicCapabilityUpdated(opcode: Opcode, enabled: bool) {

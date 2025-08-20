@@ -1,5 +1,5 @@
 import "../../role-authority/messages/internal/schemas";
-import "../../role-authority/constants/type";
+import "../../constants/type"
 
 struct (0x7e8764ef) IncreaseCounter {
     queryId: QueryId

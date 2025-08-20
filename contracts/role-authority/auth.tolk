@@ -1,4 +1,6 @@
 import "@stdlib/tvm-dicts";
+import "../constants/size"
+import "../constants/type"
 import "constants/size";
 import "constants/type";
 import "messages/external/emit";
