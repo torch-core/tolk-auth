@@ -43,7 +43,7 @@ To determine if a user can call a specific opcode:
 📌 **Example: OP_RESET Role Check**
 
 Roles:
-- Role 0 → Admin       (`0b0001`)
+- Role 0 → Guard       (`0b0001`)
 - Role 1 → Strategist  (`0b0010`)
 - Role 2 → Reset Role  (`0b0100`)
 
