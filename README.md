@@ -126,6 +126,12 @@ struct (0xdd28b73e) SetUserRole {
 }
 ```
 
+### Note: RoleId Specification
+
+* `RoleId` is defined as `uint8`.
+* This allows up to **2^8 = 256 distinct roles** to be supported.
+
+
 ### Bitmask Operations
 
 #### ✅ Enable a Role
