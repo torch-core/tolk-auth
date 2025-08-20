@@ -38,7 +38,30 @@ To determine if a user can call a specific opcode:
   - `opRoleMask` represents the combined bitmask of roles allowed to execute the opcode, retrieved from the `rolesWithCapability` dictionary.
 - Then, compute `(userRoleMask & opRoleMask) != 0` to check for intersection. The intersection (&) verifies if any bit is set in both masks, meaning the user has at least one required role.
 
+---
+
+📌 **Example: OP_RESET Role Check**
+
+Roles:
+- Role 0 → Admin       (`0b0001`)
+- Role 1 → Strategist  (`0b0010`)
+- Role 2 → Reset Role  (`0b0100`)
+
+```
+Opcode: OP_RESET
+
+userRoleMask:   0b0101   (Role 0 + Role 2)
+opRoleMask:     0b0110   (Role 1 + Role 2)
+-----------------------------------------
+AND result:     0b0100   (Role 2 is common → allowed)
+
+✅ User can call OP_RESET because they hold Reset Role (Role 2).
+```
+
+---
+
 👉 See [**Bitmask Operations**](#bitmask-operations) for more details on how this works under the hood.
+
 
 ## 🏗️ Role Authority Architecture
 
