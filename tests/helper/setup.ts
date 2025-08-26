@@ -48,6 +48,10 @@ export const createTestEnvironment = () => {
             success: true,
         });
 
+        // Check id is zero
+        const id = await main.getID();
+        expect(id).toBe(0);
+
         initSnapshot = blockchain.snapshot();
     });
 

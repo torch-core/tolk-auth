@@ -86,6 +86,7 @@ export const Topics = {
 };
 
 export const ErrorCodes = {
+    WRONG_OPCODE: 0xffff,
     NOT_AUTHORIZED: 1000,
     NOT_PENDING_OWNER: 1001,
     CLAIM_TOO_EARLY: 1002,

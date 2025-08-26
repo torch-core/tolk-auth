@@ -1,4 +1,3 @@
-import "auth";
 import "constants/size";
 import "constants/type";
 

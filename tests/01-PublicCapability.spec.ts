@@ -4,6 +4,8 @@ import '@ton/test-utils';
 import { createTestEnvironment } from './helper/setup';
 import { expectPublicCapabilityEmitLog } from './helper/log';
 import { writeFileSync } from 'fs';
+import { beginCell, toNano } from '@ton/core';
+import { OPCODE_SIZE } from '../wrappers/constants/size';
 
 describe('Public Capability tests', () => {
     let blockchain: Blockchain;
@@ -105,4 +107,34 @@ describe('Public Capability tests', () => {
             exitCode: ErrorCodes.NOT_AUTHORIZED,
         });
     });
+
+    it("should throw when wrong op to main", async () => {
+        const result = await maxey.send({
+            to: main.address,
+            value: toNano("0.05"),
+            body: beginCell().storeUint(123, OPCODE_SIZE).endCell(),
+        });
+
+        // Expect maxey sends OP_INCREASE to main and exit with NOT_AUTHORIZED
+        expect(result.transactions).toHaveTransaction({
+            from: maxey.address,
+            to: main.address,
+            success: false,
+            exitCode: ErrorCodes.WRONG_OPCODE,
+        });
+    })
+
+    it("should receive TON", async () => {
+        const result = await maxey.send({
+            to: main.address,
+            value: toNano("0.05"),
+        });
+        
+        // Expect maxey sends TON to main and success
+        expect(result.transactions).toHaveTransaction({
+            from: maxey.address,
+            to: main.address,
+            success: true,
+        });
+    })
 });
