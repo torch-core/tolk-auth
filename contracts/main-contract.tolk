@@ -1,10 +1,11 @@
 tolk 1.0
 
-/// @title Counter Example with Role Authority System
-/// @notice This contract demonstrates a minimal Counter implementation secured by the `role-authority` system.
-/// @dev For integration guidance, see the README (https://github.com/ipromise2324/tolk-auth?tab=readme-ov-file#bitmask-operations).
+/*
+ * @title Counter Example with Role Authority System
+ * @notice This contract demonstrates a minimal Counter implementation secured by the `role-authority` system.
+ * @dev For integration guidance, see the README (https://github.com/ipromise2324/tolk-auth?tab=readme-ov-file#bitmask-operations).
+ */
 
-import "messages/internal/schemas";
 import "role-authority/messages/internal/schemas";
 import "role-authority/auth";
 import "role-authority/access";
@@ -12,6 +13,8 @@ import "role-authority/messages/external/emit";
 import "role-authority/get-methods"; // Enables off-chain access to get methods. Removing this will disable them.
 import "constants/error";
 import "storage";
+import "messages/schemas";
+import "messages/allowed"
 import "get-methods";
 
 fun onInternalMessage(in: InMessage) {
