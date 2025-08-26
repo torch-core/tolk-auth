@@ -1,6 +1,9 @@
-import "../../../constants/type"
 import "../../constants/type"
-import "schemas";
+import "../constants/type"
+import "schemas/set-public-capability"
+import "schemas/set-role-capability"
+import "schemas/set-user-role"
+import "schemas/ownership"
 
 /* Auth external messages functions */
 fun emitPublicCapabilityUpdated(opcode: Opcode, enabled: bool) {

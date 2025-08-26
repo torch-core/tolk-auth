@@ -6,10 +6,14 @@ tolk 1.0
  * @dev For integration guidance, see the README (https://github.com/ipromise2324/tolk-auth?tab=readme-ov-file#bitmask-operations).
  */
 
-import "role-authority/messages/internal/schemas";
 import "role-authority/auth";
 import "role-authority/access";
-import "role-authority/messages/external/emit";
+import "role-authority/messages/allowed"
+import "role-authority/messages/schemas/set-public-capability"
+import "role-authority/messages/schemas/set-role-capability"
+import "role-authority/messages/schemas/set-user-role"
+import "role-authority/messages/schemas/ownership"
+import "role-authority/messages/emit";
 import "role-authority/get-methods"; // Enables off-chain access to get methods. Removing this will disable them.
 import "constants/error";
 import "storage";

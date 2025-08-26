@@ -1,5 +1,5 @@
 import "schemas"
-import "../role-authority/messages/internal/schemas"
+import "../role-authority/messages/allowed"
 
 type AllowedMessage = IncreaseCounter | ResetCounter | AuthMessages;
 
