@@ -306,6 +306,6 @@ pnpm test
 
 If you have any questions or want to discuss, feel free to reach out:
 
-- Email: 168allen55@gmail.com
-- Telegram: https://t.me/kobeyourself
-- TON Wallet: [UQChc1fIWCxkvP58259wiX9qLjCn0c2ZwCO9cVmL3EkZi0MN](https://tonviewer.com/EQChc1fIWCxkvP58259wiX9qLjCn0c2ZwCO9cVmL3EkZix7I)
+- Email: maxeyliu2324@pm.me
+- Telegram: https://t.me/throwunless
+- TON Wallet: [UQDEFvtKVgB_xdwboASN3Eg05t3TTY84grE_Zc3lPZznnwcG](https://tonviewer.com/UQDEFvtKVgB_xdwboASN3Eg05t3TTY84grE_Zc3lPZznnwcG)
