@@ -5,7 +5,7 @@
 
 <img width="11214" height="4560" alt="image" src="https://github.com/user-attachments/assets/9cc6ce21-80d1-4af2-825e-38ccfbf4652e" />
 
-The Role Authority system is a role-based authority system designed specifically for TON smart contracts using the Tolk language. It enables developers to easily implement permission management without rewriting similar logic and tests for every project. 
+The Role Authority system is a role-based authority system designed specifically for TON smart contracts using the Tolk language. It enables developers to easily implement permission management without rewriting similar logic and tests for every project.
 
 This system is inspired by [Solmate's RolesAuthority in Solidity](https://github.com/transmissions11/solmate/tree/main/src/auth) but adapted for TON's characteristics, utilizing efficient bitmask operations for roles.
 
@@ -27,15 +27,16 @@ If the opcode is set as public, any address can call it without requiring a spec
 
 ### 🎭 Role Capability
 
-Role permissions allow assigning roles to specific opcodes. Only users with matching roles can call them. 
+Role permissions allow assigning roles to specific opcodes. Only users with matching roles can call them.
 
 For example, in the Counter contract, you can set a "Reset Role" so only addresses with this role can call `OP_RESET`.
 
 To determine if a user can call a specific opcode:
+
 - First, check if the opcode is public. If yes, pass.
 - If not, retrieve the user's role mask (`userRoleMask`) and the opcode's allowed role mask (`opRoleMask`).
-  - `userRoleMask` represents the combined bitmask of roles the user possesses, retrieved from the `userRoles` dictionary.
-  - `opRoleMask` represents the combined bitmask of roles allowed to execute the opcode, retrieved from the `rolesWithCapability` dictionary.
+    - `userRoleMask` represents the combined bitmask of roles the user possesses, retrieved from the `userRoles` dictionary.
+    - `opRoleMask` represents the combined bitmask of roles allowed to execute the opcode, retrieved from the `rolesWithCapability` dictionary.
 - Then, compute `(userRoleMask & opRoleMask) != 0` to check for intersection. The intersection (&) verifies if any bit is set in both masks, meaning the user has at least one required role.
 
 ---
@@ -43,9 +44,10 @@ To determine if a user can call a specific opcode:
 📌 **Example: OP_RESET Role Check**
 
 Roles:
-- Role 0 → Guard       (`0b0001`)
-- Role 1 → Strategist  (`0b0010`)
-- Role 2 → Reset Role  (`0b0100`)
+
+- Role 0 → Guard (`0b0001`)
+- Role 1 → Strategist (`0b0010`)
+- Role 2 → Reset Role (`0b0100`)
 
 ```
 Opcode: OP_RESET
@@ -62,13 +64,12 @@ AND result:     0b0100   (Role 2 is common → allowed)
 
 👉 See [**Bitmask Operations**](#bitmask-operations) for more details on how this works under the hood.
 
-
 ## 🏗️ Role Authority Architecture
 
 ### 📦 Auth Structure
 
-- The `Auth` structure is the core data structure of the permission system, managing the owner and permission dictionaries. 
-- It supports up to 256 roles, using bitmasks in `RoleMask` (uint256). 
+- The `Auth` structure is the core data structure of the permission system, managing the owner and permission dictionaries.
+- It supports up to 256 roles, using bitmasks in `RoleMask` (uint256).
 - Add this structure to your contract's storage layout
 
 ```solidity
@@ -151,9 +152,8 @@ struct (0xdd28b73e) SetUserRole {
 
 ### Note: RoleId Specification
 
-* `RoleId` is defined as `uint8`.
-* This allows up to **2^8 = 256 distinct roles** to be supported.
-
+- `RoleId` is defined as `uint8`.
+- This allows up to **2^8 = 256 distinct roles** to be supported.
 
 ### Bitmask Operations
 
@@ -162,27 +162,27 @@ struct (0xdd28b73e) SetUserRole {
 To **enable** a role, set the corresponding bit in the bitmask using bitwise OR:
 
 ```ts
-mask = mask | (1 << role)
+mask = mask | (1 << role);
 ```
 
 📌 **Example: Enable Role 2 on mask `0b0001` (currently only Role 0 enabled)**
 
-* `1 << 2` = `0b0100` → this is the bitmask for **Role 2**
-* `0b0001 | 0b0100` = `0b0101` → now **Role 0 and Role 2 are enabled**
+- `1 << 2` = `0b0100` → this is the bitmask for **Role 2**
+- `0b0001 | 0b0100` = `0b0101` → now **Role 0 and Role 2 are enabled**
 
 #### ❌ Disable a Role
 
 To **disable** a role, clear the corresponding bit using bitwise AND with the inverse:
 
 ```ts
-mask = mask & ~(1 << role)
+mask = mask & ~(1 << role);
 ```
 
 📌 **Example: Disable Role 2 from mask `0b0101` (currently Role 0 and Role 2 enabled)**
 
-* `1 << 2` = `0b0100` → bitmask for **Role 2**
-* `~(1 << 2)` = `~0b0100` = `0b1011`
-* `0b0101 & 0b1011` = `0b0001` → now only **Role 0 is enabled**
+- `1 << 2` = `0b0100` → bitmask for **Role 2**
+- `~(1 << 2)` = `~0b0100` = `0b1011`
+- `0b0101 & 0b1011` = `0b0001` → now only **Role 0 is enabled**
 
 Events are emitted for tracking: `TOPIC_ROLE_CAPABILITY_UPDATED` for opcode permissions and `TOPIC_USER_ROLE_UPDATED` for user roles.
 
@@ -191,14 +191,15 @@ Events are emitted for tracking: `TOPIC_ROLE_CAPABILITY_UPDATED` for opcode perm
 Ownership transfer is implemented as a two-stage process with a timelock for security.
 
 **Process**:
-  - The current owner sends a `OP_PROPOSE_OWNERSHIP` message specifying the new owner.
+
+- The current owner sends a `OP_PROPOSE_OWNERSHIP` message specifying the new owner.
     - The new owner is recorded in `pendingOwner`.
     - `proposeTime` is set to the current timestamp.
     - Emits an `TOPIC_OWNERSHIP_PROPOSED` event.
-  - The pending owner can claim ownership via ClaimOwnership.
+- The pending owner can claim ownership via ClaimOwnership.
     - Must wait until `proposeTime + timelockPeriod` has passed.
     - Emits an `TOPIC_OWNERSHIP_CLAIMED` event.
-  - The current owner (or guardians) can send `OP_REVOKE_PENDING_OWNERSHIP` to cancel the transfer.
+- The current owner (or guardians) can send `OP_REVOKE_PENDING_OWNERSHIP` to cancel the transfer.
 
 The `timelockPeriod` is set during contract deployment.
 
@@ -218,78 +219,82 @@ These get methods are optional; you can read the contract state off-chain to ach
 To integrate the Role Authority system into your TON contract:
 
 1. Copy the [role-authority folder](https://github.com/ipromise2324/tolk-auth/tree/main/contracts/role-authority) into your contract directory.
-   
-2. Add the `Auth` structure to your contract's storage layout:
-   ```solidity
-   import "role-authority/auth";
+2. Add the `Auth` structure to your contract's storage layout and implement the `setAuth` function:
 
-   struct Storage {
-       id: uint32
-       counter: uint32
-       auth: Cell<Auth> // Add Auth struct to contract's storage
-   }
-   ```
+    ```solidity
+    import "role-authority/auth";
+
+    struct Storage {
+        id: uint32
+        counter: uint32
+        auth: Cell<Auth> // Add Auth struct to contract's storage
+    }
+
+    // Add this function to set the auth struct in the storage
+    fun Storage.setAuth(mutate self, auth: Auth) {
+        self.auth = auth.toCell();
+        self.save();
+    }
+    ```
 
 3. Add `AuthMessages` to your `AllowedMessage` union:
-   ```solidity
-   import "role-authority/int-messages";   
-   import "role-authority/constants/type";
 
-   // Union AuthMessages to AllowedMessage to enable the Auth system.
-   type AllowedMessage = IncreaseCounter | ResetCounter | AuthMessages;
-   ```
+    ```solidity
+    import "../role-authority/messages/allowed";
+
+    // Union AuthMessages to AllowedMessage to enable the Auth system.
+    type AllowedMessage = IncreaseCounter | ResetCounter | AuthMessages;
+    ```
 
 4. In `onInternalMessage`, add match cases for `AuthMessages`:
-   ```solidity
-   import "role-authority/auth";
-   import "role-authority/access";
-   import "role-authority/int-messages";
-   import "role-authority/ext-messages";
-   import "role-authority/get-methods";
 
-   /* Auth internal messages */
-   SetPublicCapability => {
-       auth.requireAuth(in.senderAddress, OP_SET_PUBLIC_CAPABILITY);
-       storage.auth = auth.setPublicCapability(msg.opcode, msg.enabled);
-       storage.save();
-   }
-   SetRoleCapability => {
-       auth.requireAuth(in.senderAddress, OP_SET_ROLE_CAPABILITY);
-       storage.auth = auth.setRoleCapability(msg.role, msg.opcode, msg.enabled);
-       storage.save();
-   }
-   SetUserRole => {
-       auth.requireAuth(in.senderAddress, OP_SET_USER_ROLE);
-       storage.auth = auth.setUserRole(msg.user, msg.role, msg.enabled);
-       storage.save();
-   }
-   ProposeOwnership => {
-       auth.requireAuth(in.senderAddress, OP_PROPOSE_OWNERSHIP);
-       auth.ownerInfo.pendingOwner = msg.newOwner;
-       auth.ownerInfo.proposeTime = blockchain.now();
-       emitOwnershipProposed(in.senderAddress, msg.newOwner, auth.ownerInfo.proposeTime, auth.ownerInfo.timelockPeriod);
-       storage.auth = auth.toCell();
-       storage.save();
-   }
-   ClaimOwnership => {
-       auth.requirePendingOwner(in.senderAddress);
-       auth.requireTimelockPassed();
-       auth.ownerInfo.owner = in.senderAddress;
-       auth.ownerInfo.pendingOwner = createAddressNone();
-       auth.ownerInfo.proposeTime = 0;
-       emitOwnershipClaimed(in.senderAddress);
-       storage.auth = auth.toCell();
-       storage.save();
-   }
-   RevokePendingOwnership => {
-       auth.requireAuth(in.senderAddress, OP_REVOKE_PENDING_OWNERSHIP);
-       emitOwnershipRevoked(in.senderAddress, auth.ownerInfo.pendingOwner);
-       auth.ownerInfo.pendingOwner = createAddressNone();
-       auth.ownerInfo.proposeTime = 0;
-       storage.auth = auth.toCell();
-       storage.save();
-   }
-   ```
+    ```solidity
+    import "role-authority/auth";
+    import "role-authority/access";
+    import "role-authority/messages/allowed"
+    import "role-authority/messages/schemas/set-public-capability"
+    import "role-authority/messages/schemas/set-role-capability"
+    import "role-authority/messages/schemas/set-user-role"
+    import "role-authority/messages/schemas/ownership"
+    import "role-authority/messages/emit";
+    import "role-authority/get-methods";
+
+    /* Auth internal messages */
+    SetPublicCapability => {
+        auth.requireAuth(in.senderAddress, OP_SET_PUBLIC_CAPABILITY);
+        auth.setPublicCapability(inMsg.opcode, inMsg.enabled);
+        storage.setAuth(auth);
+    }
+    SetRoleCapability => {
+        auth.requireAuth(in.senderAddress, OP_SET_ROLE_CAPABILITY);
+        auth.setRoleCapability(inMsg.role, inMsg.opcode, inMsg.enabled);
+        storage.setAuth(auth);
+    }
+    SetUserRole => {
+        auth.requireAuth(in.senderAddress, OP_SET_USER_ROLE);
+        auth.setUserRole(inMsg.user, inMsg.role, inMsg.enabled);
+        storage.setAuth(auth);
+    }
+    ProposeOwnership => {
+        auth.requireAuth(in.senderAddress, OP_PROPOSE_OWNERSHIP);
+        auth.proposeOwnership(inMsg.newOwner, blockchain.now());
+        storage.setAuth(auth);
+    }
+    ClaimOwnership => {
+        auth.requirePendingOwner(in.senderAddress);
+        auth.requireTimelockPassed();
+        auth.ownerInfo.owner = in.senderAddress;
+        emitOwnershipClaimed(in.senderAddress);
+        auth.clearPendingOwner();
+        storage.setAuth(auth);
+    }
+    RevokePendingOwnership => {
+        auth.requireAuth(in.senderAddress, OP_REVOKE_PENDING_OWNERSHIP);
+        emitOwnershipRevoked(in.senderAddress, auth.ownerInfo.pendingOwner);
+        auth.clearPendingOwner();
+        storage.setAuth(auth);
+    }
+    ```
 
 5. Determine which opcodes should be public, which require specific roles, and assign roles to addresses accordingly.
 
