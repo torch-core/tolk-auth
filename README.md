@@ -256,7 +256,6 @@ To integrate the Role Authority system into your TON contract:
     import "role-authority/messages/schemas/set-role-capability"
     import "role-authority/messages/schemas/set-user-role"
     import "role-authority/messages/schemas/ownership"
-    import "role-authority/messages/emit";
     import "role-authority/get-methods";
 
     /* Auth internal messages */
@@ -283,15 +282,12 @@ To integrate the Role Authority system into your TON contract:
     ClaimOwnership => {
         auth.requirePendingOwner(in.senderAddress);
         auth.requireTimelockPassed();
-        auth.ownerInfo.owner = in.senderAddress;
-        emitOwnershipClaimed(in.senderAddress);
-        auth.clearPendingOwner();
+        auth.claimOwnership(in.senderAddress);
         storage.setAuth(auth);
     }
     RevokePendingOwnership => {
         auth.requireAuth(in.senderAddress, OP_REVOKE_PENDING_OWNERSHIP);
-        emitOwnershipRevoked(in.senderAddress, auth.ownerInfo.pendingOwner);
-        auth.clearPendingOwner();
+        auth.revokePendingOwnership(in.senderAddress);
         storage.setAuth(auth);
     }
     ```

@@ -123,10 +123,34 @@ fun Auth.proposeOwnership(mutate self, newOwner: address, proposeTime: Timestamp
 }
 
 /*
- * @dev Clears pending owner information after ownership claim or revocation
+ * Clears pending owner information after ownership claim or revocation
+ * @param self The mutable Auth structure instance.
  * @notice Resets pendingOwner to none and proposeTime to 0
  */
 fun Auth.clearPendingOwner(mutate self) {
     self.ownerInfo.pendingOwner = createAddressNone();
     self.ownerInfo.proposeTime = 0;
+}
+
+/*
+ * Claims ownership for a new owner.
+ * @param self The mutable Auth structure instance.
+ * @param newOwner The address of the new owner.
+ * @dev Emits an TOPIC_OWNERSHIP_CLAIMED event after claiming ownership.
+*/
+fun Auth.claimOwnership(mutate self, newOwner: address) {
+    self.ownerInfo.owner = newOwner;
+    emitOwnershipClaimed(newOwner);
+    self.clearPendingOwner();
+}
+
+/*
+ * Revokes pending ownership for a revoker.
+ * @param self The mutable Auth structure instance.
+ * @param revoker The address of the revoker.
+ * @dev Emits an TOPIC_OWNERSHIP_REVOKED event after revoking pending ownership.
+ */
+fun Auth.revokePendingOwnership(mutate self, revoker: address) {
+    emitOwnershipRevoked(revoker, self.ownerInfo.pendingOwner);
+    self.clearPendingOwner();
 }
