@@ -57,11 +57,8 @@ fun onInternalMessage(in: InMessage) {
         }
         ProposeOwnership => {
             auth.requireAuth(in.senderAddress, OP_PROPOSE_OWNERSHIP);
-            auth.ownerInfo.pendingOwner = inMsg.newOwner;
-            auth.ownerInfo.proposeTime = blockchain.now();
-            emitOwnershipProposed(in.senderAddress, inMsg.newOwner, auth.ownerInfo.proposeTime, auth.ownerInfo.timelockPeriod);
-            storage.auth = auth.toCell();
-            storage.save();
+            auth.proposeOwnership(inMsg.newOwner, blockchain.now());
+            storage.setAuth(auth);
         }
         ClaimOwnership => {
             auth.requirePendingOwner(in.senderAddress);

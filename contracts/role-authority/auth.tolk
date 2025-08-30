@@ -110,6 +110,19 @@ fun Auth.setUserRole(mutate self, user: address, role: RoleId, enabled: bool) {
 }
 
 /*
+ * Proposes ownership to a new owner.
+ * @param self The mutable Auth structure instance.
+ * @param newOwner The address of the new owner.
+ * @param proposeTime The timestamp of the ownership proposal.
+ * @dev Emits an TOPIC_OWNERSHIP_PROPOSED event after proposing ownership.
+ */
+fun Auth.proposeOwnership(mutate self, newOwner: address, proposeTime: Timestamp) {
+    self.ownerInfo.pendingOwner = newOwner;
+    self.ownerInfo.proposeTime = proposeTime;
+    emitOwnershipProposed(self.ownerInfo.owner, newOwner, self.ownerInfo.proposeTime, self.ownerInfo.timelockPeriod);
+}
+
+/*
  * @dev Clears pending owner information after ownership claim or revocation
  * @notice Resets pendingOwner to none and proposeTime to 0
  */
