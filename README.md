@@ -96,8 +96,8 @@ During contract deployment, initialize the Auth structure with the owner and tim
 struct OwnerInfo {
     owner: address                  // Address of the contract owner, who also manages the authority logic.
     pendingOwner: address           // Address of the pending owner, who can claim the ownership after the timelock period.
-    timelockPeriod: Timestamp       // Timelock period for the ownership can be claimed.
-    proposeTime: Timestamp          // Timestamp of the ownership proposal.
+    timelockPeriod: Timestamp = 0   // Timelock period for the ownership can be claimed.
+    proposeTime: Timestamp = 0      // Timestamp of the ownership proposal.
 }
 ```
 
