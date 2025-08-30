@@ -13,3 +13,9 @@ fun Storage.load() {
 fun Storage.save(self) {
     contract.setData(self.toCell())
 }
+
+// Add this function to set the auth struct in the storage
+fun Storage.setAuth(mutate self, auth: Auth) {
+    self.auth = auth.toCell();
+    self.save();
+}

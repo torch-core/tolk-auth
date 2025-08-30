@@ -21,7 +21,7 @@ export const createTestEnvironment = () => {
         now = Math.floor(Date.now() / 1000);
         blockchain = await Blockchain.create();
         blockchain.verbosity = { ...blockchain.verbosity, print: false };
-        blockchain.enableCoverage();
+        // blockchain.enableCoverage();
         blockchain.now = now;
         owner = await blockchain.treasury('owner');
         maxey = await blockchain.treasury('maxey');

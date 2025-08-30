@@ -77,8 +77,6 @@ fun Auth.getUserRoles(self, user: address): RoleMask {
 fun Auth.setPublicCapability(mutate self, opcode: Opcode, enabled: bool) {
     self.isCapabilityPublic.uDictSet(OPCODE_SIZE, opcode, packDictSliceValue(enabled));
     emitPublicCapabilityUpdated(opcode, enabled);
-
-    return self.toCell();
 }
 
 /*
@@ -94,8 +92,6 @@ fun Auth.setRoleCapability(mutate self, role: RoleId, opcode: Opcode, enabled: b
     val newMask = enabled ? (currentMask | 1 << role) : (currentMask & ~(1 << role));
     self.rolesWithCapability.uDictSet(OPCODE_SIZE, opcode, packDictSliceValue(newMask));
     emitRoleCapabilityUpdated(opcode, role, enabled);
-
-    return self.toCell();
 }
 
 /*
@@ -111,18 +107,13 @@ fun Auth.setUserRole(mutate self, user: address, role: RoleId, enabled: bool) {
     val newMask = enabled ? (currentMask | 1 << role) : (currentMask & ~(1 << role));
     self.userRoles.sDictSet(ADDRESS_SIZE, user as slice, packDictSliceValue(newMask));
     emitUserRoleUpdated(user, role, enabled);
-    
-    return self.toCell();
 }
 
 /*
  * @dev Clears pending owner information after ownership claim or revocation
  * @notice Resets pendingOwner to none and proposeTime to 0
- * @return cell The updated auth state as a cell
  */
 fun Auth.clearPendingOwner(mutate self) {
     self.ownerInfo.pendingOwner = createAddressNone();
     self.ownerInfo.proposeTime = 0;
-
-    return self.toCell();
 }

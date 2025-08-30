@@ -22,15 +22,15 @@ import "messages/allowed"
 import "get-methods";
 
 fun onInternalMessage(in: InMessage) {
-    val msg = lazy AllowedMessage.fromSlice(in.body);
+    val inMsg = lazy AllowedMessage.fromSlice(in.body);
     var storage = lazy Storage.load();
     var auth = lazy storage.auth.load();
 
-    match (msg) {
+    match (inMsg) {
         /* Counter internal messages */
         IncreaseCounter => {
             auth.requireAuth(in.senderAddress, OP_INCREASE);
-            storage.counter += msg.increaseBy;
+            storage.counter += inMsg.increaseBy;
             storage.save();
         }
         ResetCounter => {
@@ -42,24 +42,24 @@ fun onInternalMessage(in: InMessage) {
         /* Auth internal messages */
         SetPublicCapability => {
             auth.requireAuth(in.senderAddress, OP_SET_PUBLIC_CAPABILITY);
-            storage.auth = auth.setPublicCapability(msg.opcode, msg.enabled);
-            storage.save();
+            auth.setPublicCapability(inMsg.opcode, inMsg.enabled);
+            storage.setAuth(auth);
         }
         SetRoleCapability => {
             auth.requireAuth(in.senderAddress, OP_SET_ROLE_CAPABILITY);
-            storage.auth = auth.setRoleCapability(msg.role, msg.opcode, msg.enabled);
-            storage.save();
+            auth.setRoleCapability(inMsg.role, inMsg.opcode, inMsg.enabled);
+            storage.setAuth(auth);
         }
         SetUserRole => {
             auth.requireAuth(in.senderAddress, OP_SET_USER_ROLE);
-            storage.auth = auth.setUserRole(msg.user, msg.role, msg.enabled);
-            storage.save();
+            auth.setUserRole(inMsg.user, inMsg.role, inMsg.enabled);
+            storage.setAuth(auth);
         }
         ProposeOwnership => {
             auth.requireAuth(in.senderAddress, OP_PROPOSE_OWNERSHIP);
-            auth.ownerInfo.pendingOwner = msg.newOwner;
+            auth.ownerInfo.pendingOwner = inMsg.newOwner;
             auth.ownerInfo.proposeTime = blockchain.now();
-            emitOwnershipProposed(in.senderAddress, msg.newOwner, auth.ownerInfo.proposeTime, auth.ownerInfo.timelockPeriod);
+            emitOwnershipProposed(in.senderAddress, inMsg.newOwner, auth.ownerInfo.proposeTime, auth.ownerInfo.timelockPeriod);
             storage.auth = auth.toCell();
             storage.save();
         }
@@ -68,14 +68,14 @@ fun onInternalMessage(in: InMessage) {
             auth.requireTimelockPassed();
             auth.ownerInfo.owner = in.senderAddress;
             emitOwnershipClaimed(in.senderAddress);
-            storage.auth = auth.clearPendingOwner();
-            storage.save();
+            auth.clearPendingOwner();
+            storage.setAuth(auth);
         }
         RevokePendingOwnership => {
             auth.requireAuth(in.senderAddress, OP_REVOKE_PENDING_OWNERSHIP);
             emitOwnershipRevoked(in.senderAddress, auth.ownerInfo.pendingOwner);
-            storage.auth = auth.clearPendingOwner();
-            storage.save();
+            auth.clearPendingOwner();
+            storage.setAuth(auth);
         }
         else => {
             assert (in.body.isEmpty()) throw ERR_INVALID_OPCODE
