@@ -85,7 +85,8 @@ fun Auth.setPublicCapability(mutate self, opcode: Opcode, enabled: bool) {
  * @param role The role ID to set (0-255).
  * @param opcode The opcode to set the capability for.
  * @param enabled True to enable the role for the opcode, false to disable.
- * @dev Emits an TOPIC_ROLE_CAPABILITY_UPDATED event after updating the role capability.
+ * @dev Uses bitmask operations to enable/disable the role bit in the capability's role mask.
+ *      Emits an TOPIC_ROLE_CAPABILITY_UPDATED event after updating the role capability.
  */
 fun Auth.setRoleCapability(mutate self, role: RoleId, opcode: Opcode, enabled: bool) {
     val currentMask = self.getRoleCapability(opcode);
@@ -100,7 +101,8 @@ fun Auth.setRoleCapability(mutate self, role: RoleId, opcode: Opcode, enabled: b
  * @param user The address of the user to update.
  * @param role The role ID to set (0-255).
  * @param enabled True to enable the role for the user, false to disable.
- * @dev Emits an TOPIC_USER_ROLE_UPDATED event after updating the user's role.
+ * @dev Uses bitmask operations to enable/disable the role bit in the user's role mask.
+ *      Emits an TOPIC_USER_ROLE_UPDATED event after updating the user's role.
  */
 fun Auth.setUserRole(mutate self, user: address, role: RoleId, enabled: bool) {
     val currentMask = self.getUserRoles(user);
@@ -114,7 +116,9 @@ fun Auth.setUserRole(mutate self, user: address, role: RoleId, enabled: bool) {
  * @param self The mutable Auth structure instance.
  * @param newOwner The address of the new owner.
  * @param proposeTime The timestamp of the ownership proposal.
- * @dev Emits an TOPIC_OWNERSHIP_PROPOSED event after proposing ownership.
+ * @dev Sets pendingOwner to newOwner
+ *      Sets proposeTime
+ *      Emits an TOPIC_OWNERSHIP_PROPOSED event after proposing ownership.
  */
 fun Auth.proposeOwnership(mutate self, newOwner: address, proposeTime: Timestamp) {
     self.ownerInfo.pendingOwner = newOwner;
@@ -125,7 +129,7 @@ fun Auth.proposeOwnership(mutate self, newOwner: address, proposeTime: Timestamp
 /*
  * Clears pending owner information after ownership claim or revocation
  * @param self The mutable Auth structure instance.
- * @notice Resets pendingOwner to none and proposeTime to 0
+ * @dev Resets pendingOwner to none and proposeTime to 0
  */
 fun Auth.clearPendingOwner(mutate self) {
     self.ownerInfo.pendingOwner = createAddressNone();
@@ -136,12 +140,14 @@ fun Auth.clearPendingOwner(mutate self) {
  * Claims ownership for a new owner.
  * @param self The mutable Auth structure instance.
  * @param newOwner The address of the new owner.
- * @dev Emits an TOPIC_OWNERSHIP_CLAIMED event after claiming ownership.
+ * @dev Sets owner to newOwner
+ *      Resets pendingOwner to none and proposeTime to 0
+ *      Emits an TOPIC_OWNERSHIP_CLAIMED event after claiming ownership.
 */
 fun Auth.claimOwnership(mutate self, newOwner: address) {
     self.ownerInfo.owner = newOwner;
-    emitOwnershipClaimed(newOwner);
     self.clearPendingOwner();
+    emitOwnershipClaimed(newOwner);
 }
 
 /*
@@ -149,8 +155,10 @@ fun Auth.claimOwnership(mutate self, newOwner: address) {
  * @param self The mutable Auth structure instance.
  * @param revoker The address of the revoker.
  * @dev Emits an TOPIC_OWNERSHIP_REVOKED event after revoking pending ownership.
+ *      Resets pendingOwner to none and proposeTime to 0
  */
 fun Auth.revokePendingOwnership(mutate self, revoker: address) {
+    // Emit event before clearing pending owner
     emitOwnershipRevoked(revoker, self.ownerInfo.pendingOwner);
     self.clearPendingOwner();
 }
