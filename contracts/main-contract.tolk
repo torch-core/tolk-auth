@@ -42,33 +42,33 @@ fun onInternalMessage(in: InMessage) {
         SetPublicCapability => {
             auth.requireAuth(in.senderAddress, OP_SET_PUBLIC_CAPABILITY);
             auth.setPublicCapability(inMsg.opcode, inMsg.enabled);
-            storage.setAuth(auth);
+            storage.updateAuth(auth);
         }
         SetRoleCapability => {
             auth.requireAuth(in.senderAddress, OP_SET_ROLE_CAPABILITY);
             auth.setRoleCapability(inMsg.role, inMsg.opcode, inMsg.enabled);
-            storage.setAuth(auth);
+            storage.updateAuth(auth);
         }
         SetUserRole => {
             auth.requireAuth(in.senderAddress, OP_SET_USER_ROLE);
             auth.setUserRole(inMsg.user, inMsg.role, inMsg.enabled);
-            storage.setAuth(auth);
+            storage.updateAuth(auth);
         }
         ProposeOwnership => {
             auth.requireAuth(in.senderAddress, OP_PROPOSE_OWNERSHIP);
             auth.proposeOwnership(inMsg.newOwner, blockchain.now());
-            storage.setAuth(auth);
+            storage.updateAuth(auth);
         }
         ClaimOwnership => {
             auth.requirePendingOwner(in.senderAddress);
             auth.requireTimelockPassed();
             auth.claimOwnership(in.senderAddress);
-            storage.setAuth(auth);
+            storage.updateAuth(auth);
         }
         RevokePendingOwnership => {
             auth.requireAuth(in.senderAddress, OP_REVOKE_PENDING_OWNERSHIP);
             auth.revokePendingOwnership(in.senderAddress);
-            storage.setAuth(auth);
+            storage.updateAuth(auth);
         }
         else => {
             assert (in.body.isEmpty()) throw ERR_INVALID_OPCODE
