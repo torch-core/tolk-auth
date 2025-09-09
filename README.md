@@ -309,4 +309,3 @@ If you have any questions or want to discuss, feel free to reach out:
 
 - Email: maxeyliu2324@pm.me
 - Telegram: https://t.me/throwunless
-- TON Wallet: [UQDEFvtKVgB_xdwboASN3Eg05t3TTY84grE_Zc3lPZznnwcG](https://tonviewer.com/UQDEFvtKVgB_xdwboASN3Eg05t3TTY84grE_Zc3lPZznnwcG)
