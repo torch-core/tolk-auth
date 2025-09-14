@@ -61,6 +61,17 @@ fun Auth.canCall(self, user: address, opcode: Opcode): bool {
 }
 
 /*
+ * Checks if a user is the owner.
+ * @param self The Auth structure instance.
+ * @param user The address of the user to check.
+ * @return True if the user is the owner, false otherwise.
+ */
+@pure
+fun Auth.isOwner(self, user: address): bool {
+    return user == self.ownerInfo.owner;
+}
+
+/*
  * Checks if a user is authorized for an opcode, including owner fallback.
  * @param self The Auth structure instance.
  * @param user The address of the user to check.
@@ -69,7 +80,7 @@ fun Auth.canCall(self, user: address, opcode: Opcode): bool {
  */
 @pure
 fun Auth.isAuthorized(self, user: address, opcode: Opcode): bool {
-    return self.canCall(user, opcode) || user == self.ownerInfo.owner;
+    return self.canCall(user, opcode) || self.isOwner(user);
 }
 
 /*
