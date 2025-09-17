@@ -8,7 +8,6 @@ tolk 1.0
 
 import "role-authority/auth";
 import "role-authority/access";
-import "role-authority/messages/allowed"
 import "role-authority/messages/schemas/set-public-capability"
 import "role-authority/messages/schemas/set-role-capability"
 import "role-authority/messages/schemas/set-user-role"

@@ -7,6 +7,7 @@ struct (0xc6012bd0) SetRoleCapability {
     role: RoleId        // Set this role to have the capability for the opcode
     enabled: bool       // Whether to enable or disable the role capability
 }
+const OP_SET_ROLE_CAPABILITY = SetRoleCapability.getDeclaredPackPrefix();
 
 // Logs
 struct(0x6aa264fa) RoleCapabilityUpdated {

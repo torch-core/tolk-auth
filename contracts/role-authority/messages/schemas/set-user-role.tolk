@@ -7,6 +7,7 @@ struct (0xdd28b73e) SetUserRole {
     role: RoleId        // Grant this role to the user
     enabled: bool       // Whether to enable or disable the user role
 }
+const OP_SET_USER_ROLE = SetUserRole.getDeclaredPackPrefix();
 
 // Logs
 struct(0x31322498) UserRoleUpdated {

@@ -4,6 +4,7 @@ struct (0x9c25dd71) ProposeOwnership {
     queryId: QueryId
     newOwner: address
 }
+const OP_PROPOSE_OWNERSHIP = ProposeOwnership.getDeclaredPackPrefix();
 
 struct (0xb835b5cb) ClaimOwnership {
     queryId: QueryId
@@ -12,6 +13,7 @@ struct (0xb835b5cb) ClaimOwnership {
 struct (0x3d89e313) RevokePendingOwnership {
     queryId: QueryId
 }
+const OP_REVOKE_PENDING_OWNERSHIP = RevokePendingOwnership.getDeclaredPackPrefix();
 
 // Logs
 struct(0x261921b7) OwnershipProposed {

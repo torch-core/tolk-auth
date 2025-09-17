@@ -5,6 +5,7 @@ struct (0x714a73bb) SetPublicCapability {
     opcode: Opcode      // Target opcode to set public access for
     enabled: bool       // Whether to enable or disable public access to the opcode
 }
+const OP_SET_PUBLIC_CAPABILITY = SetPublicCapability.getDeclaredPackPrefix();   
 
 // Logs
 struct(0xd213468c) PublicCapabilityUpdated {
