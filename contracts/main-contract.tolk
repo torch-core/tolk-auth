@@ -1,5 +1,3 @@
-tolk 1.0
-
 /*
  * @title Counter Example with Role Authority System
  * @notice This contract demonstrates a minimal Counter implementation secured by the `role-authority` system.

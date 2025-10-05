@@ -1,1 +1,0 @@
-const ROLE_MASK_SIZE = 256;

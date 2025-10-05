@@ -1,10 +1,6 @@
-import "@stdlib/tvm-dicts";
-import "../constants/size"
 import "../constants/type"
-import "constants/size";
 import "constants/type";
 import "messages/emit";
-import "pack";
 
 /*
  * The main structure managing the authority data, including owner and permission dictionaries.
@@ -16,9 +12,9 @@ import "pack";
  */
 struct Auth {
     ownerInfo: OwnerInfo            // Stores ownership data, including current owner, pending owner, and timelock info.
-    isCapabilityPublic: dict        // Dict<Opcode, bool>: Indicates if an opcode is public.
-    rolesWithCapability: dict       // Dict<Opcode, RoleMask>: Maps each opcode to the roles that are allowed to execute it (an opcode can be assigned to multiple roles).
-    userRoles: dict                 // Dict<address, RoleMask>: Maps user addresses to their assigned roles (a user can have multiple roles).
+    isCapabilityPublic: map<Opcode, bool>        // Indicates if an opcode is public.
+    rolesWithCapability: map<Opcode, RoleMask>       // Maps each opcode to the roles that are allowed to execute it (an opcode can be assigned to multiple roles).
+    userRoles: map<address, RoleMask>                 // Dict<address, RoleMask>: Maps user addresses to their assigned roles (a user can have multiple roles).
 }
 
 /*
@@ -39,8 +35,8 @@ struct OwnerInfo {
  */
 @pure
 fun Auth.getPublicCapability(self, opcode: Opcode): bool {
-    var (isPublic, found) = self.isCapabilityPublic.uDictGet(OPCODE_SIZE, opcode);
-    return found ? isPublic!.loadBool() : false;
+    var isPublic = self.isCapabilityPublic.get(opcode);
+    return isPublic.isFound ? isPublic.loadValue() : false;
 }
 
 /*
@@ -51,8 +47,8 @@ fun Auth.getPublicCapability(self, opcode: Opcode): bool {
  */
 @pure
 fun Auth.getRoleCapability(self, opcode: Opcode): RoleMask {
-    var (opRoleMask, found) = self.rolesWithCapability.uDictGet(OPCODE_SIZE, opcode);    
-    return (found ? opRoleMask!.loadUint(ROLE_MASK_SIZE) : 0) as RoleMask;
+    var opRoleMask = self.rolesWithCapability.get(opcode);    
+    return (opRoleMask.isFound ? opRoleMask.loadValue() : 0) as RoleMask;
 }
 
 /*
@@ -63,8 +59,8 @@ fun Auth.getRoleCapability(self, opcode: Opcode): RoleMask {
  */
 @pure
 fun Auth.getUserRoles(self, user: address): RoleMask {
-    var (userRoleMask, found) = self.userRoles.sDictGet(ADDRESS_SIZE, user as slice);
-    return (found ? userRoleMask!.loadUint(ROLE_MASK_SIZE) : 0) as RoleMask;
+    var userRoleMask = self.userRoles.get(user);
+    return (userRoleMask.isFound ? userRoleMask.loadValue() : 0) as RoleMask;
 }
 
 /*
@@ -75,7 +71,7 @@ fun Auth.getUserRoles(self, user: address): RoleMask {
  * @dev Emits an TOPIC_PUBLIC_CAPABILITY_UPDATED event after setting the capability.
  */
 fun Auth.setPublicCapability(mutate self, opcode: Opcode, enabled: bool) {
-    self.isCapabilityPublic.uDictSet(OPCODE_SIZE, opcode, packDictSliceValue(enabled));
+    self.isCapabilityPublic.set(opcode, enabled);
     emitPublicCapabilityUpdated(opcode, enabled);
 }
 
@@ -91,7 +87,7 @@ fun Auth.setPublicCapability(mutate self, opcode: Opcode, enabled: bool) {
 fun Auth.setRoleCapability(mutate self, role: RoleId, opcode: Opcode, enabled: bool) {
     val currentMask = self.getRoleCapability(opcode);
     val newMask = enabled ? (currentMask | 1 << role) : (currentMask & ~(1 << role));
-    self.rolesWithCapability.uDictSet(OPCODE_SIZE, opcode, packDictSliceValue(newMask));
+    self.rolesWithCapability.set(opcode, newMask);
     emitRoleCapabilityUpdated(opcode, role, enabled);
 }
 
@@ -107,7 +103,7 @@ fun Auth.setRoleCapability(mutate self, role: RoleId, opcode: Opcode, enabled: b
 fun Auth.setUserRole(mutate self, user: address, role: RoleId, enabled: bool) {
     val currentMask = self.getUserRoles(user);
     val newMask = enabled ? (currentMask | 1 << role) : (currentMask & ~(1 << role));
-    self.userRoles.sDictSet(ADDRESS_SIZE, user as slice, packDictSliceValue(newMask));
+    self.userRoles.set(user, newMask);
     emitUserRoleUpdated(user, role, enabled);
 }
 
